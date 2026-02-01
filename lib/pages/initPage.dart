@@ -1,28 +1,26 @@
 import 'package:flutter/material.dart';
-
+import '../themes/app_colors.dart';
 class Initpage extends StatelessWidget {
   const Initpage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.primary,
       appBar: AppBar(
-        title: const Text("Home"),
+        backgroundColor: AppColors.primary,
+        title: const Text("SEEFOOD",
+        style: TextStyle(
+          color: AppColors.foreground,
+          fontWeight: FontWeight.bold
+        ),
+        ),
       ),
 
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text(
-              "Welcome Vivek 👋",
-              style: TextStyle(fontSize: 22),
-            ),
-
-            SizedBox(height: 12),
-
-            Text("Your Flutter app is ready 🚀"),
-          ],
+          children: const []
         ),
       ),
     );
