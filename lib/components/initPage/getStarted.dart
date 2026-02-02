@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seefood/themes/app_colors.dart';
+import 'package:seefood/pages/homePage.dart'; // 👈 import target page
 
 class GetStarted extends StatelessWidget {
   const GetStarted({super.key});
@@ -9,21 +10,26 @@ class GetStarted extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-      onPressed: () {
-        print("clicked");
-      },
-
-      style: ElevatedButton.styleFrom(
-        elevation: 0,
-        backgroundColor: AppColors.secondary, // your primary
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        shape: const StadiumBorder(),
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Homepage(),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: AppColors.secondary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          shape: const StadiumBorder(),
+        ),
+        child: const Text(
+          'Get Started',
+          style: TextStyle(fontSize: 20),
+        ),
       ),
-      child: const Text('Get Started',
-        style:TextStyle(fontSize: 20)
-      ),
-    )
     );
   }
 }
