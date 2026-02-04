@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seefood/components/homePage/appBar.dart';
 import 'package:seefood/components/common/navBar.dart';
+import 'package:seefood/components/homePage/canteenCard.dart';
 import 'package:seefood/themes/app_colors.dart';
 
 class Homepage extends StatefulWidget {
@@ -18,8 +19,13 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       backgroundColor: AppColors.grayground,
       appBar: const HomeAppBar(),
-      body: const Center(
-        child: Text("Home Content"),
+      body: Padding(
+        padding: const EdgeInsetsDirectional.only(start: 20, top: 0, end: 20, bottom: 0),
+        child: Column(
+          children: [
+            CanteenCard(),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomPillNav(
         currentIndex: _currentIndex,
