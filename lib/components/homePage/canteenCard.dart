@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:seefood/themes/app_colors.dart';
+import 'package:seefood/data/canteen_api/canteen.dart';
 
-class CanteenCard extends StatefulWidget {
-  const CanteenCard({super.key});
+class CanteenCard extends StatelessWidget {
+  final Canteen canteen;
 
-  @override
-  State<CanteenCard> createState() => _CanteenCardState();
-}
+  const CanteenCard({super.key, required this.canteen});
 
-class _CanteenCardState extends State<CanteenCard> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-
+      height: 320,
       child:DecoratedBox(
   
       decoration: BoxDecoration(
@@ -38,18 +36,19 @@ class _CanteenCardState extends State<CanteenCard> {
                   ),
                 ),
               ),
+              Spacer(),
               SizedBox(
                 height: 80,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
+                        children: [
+                          const Text(
                             "Canteen Name",
                             style: TextStyle(
                               fontSize: 12,
@@ -57,8 +56,8 @@ class _CanteenCardState extends State<CanteenCard> {
                             ),
                           ),
                           Text(
-                            "Soopnam Canteen",
-                            style: TextStyle(
+                            canteen.name,
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),

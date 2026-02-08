@@ -35,7 +35,7 @@ class BottomPillNav extends StatelessWidget {
           children: [
             _navItem(Icons.home_rounded, "Home", 0),
             _navItem(Icons.search_rounded, "Search", 1),
-            _navItem(Icons.favorite_rounded, "Likess", 2),
+            _navItem(Icons.favorite_rounded, "Likes", 2),
             _navItem(Icons.person_rounded, "Profile", 3),
           ],
         ),
