@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:seefood/data/canteen_api/canteen_item.dart';
+import 'package:seefood/store/cart/cart_controller.dart';
+import 'package:seefood/store/cart/cart_item.dart';
 
 class ItemCard extends StatelessWidget {
   const ItemCard({super.key, required this.item});
@@ -8,6 +11,7 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final itemId = item.id.toString();
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -66,8 +70,32 @@ class ItemCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _AddToDishButton(
-            onPressed: () {},
+          Consumer<CartController>(
+            builder: (context, cart, _) {
+              final quantity = cart.getQuantity(itemId);
+              return quantity == 0
+                  ? _AddToDishButton(
+                      onPressed: () {
+                        cart.addItem(
+                          CartItem(
+                            itemId: itemId,
+                            name: item.name,
+                            price: item.price,
+                            imageUrl: item.imageUrl,
+                          ),
+                        );
+                      },
+                    )
+                  : _QuantityControl(
+                      quantity: quantity,
+                      onDecrement: () {
+                        cart.updateQuantity(itemId, quantity - 1);
+                      },
+                      onIncrement: () {
+                        cart.updateQuantity(itemId, quantity + 1);
+                      },
+                    );
+            },
           ),
         ],
       ),
@@ -243,6 +271,77 @@ class _AddToDishButton extends StatelessWidget {
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuantityControl extends StatelessWidget {
+  const _QuantityControl({
+    required this.quantity,
+    required this.onDecrement,
+    required this.onIncrement,
+  });
+
+  final int quantity;
+  final VoidCallback onDecrement;
+  final VoidCallback onIncrement;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        height: 54,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFDFF7E8),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _RoundIconButton(
+              icon: Icons.remove,
+              onPressed: onDecrement,
+            ),
+            Text(
+              quantity.toString(),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            _RoundIconButton(
+              icon: Icons.add,
+              onPressed: onIncrement,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RoundIconButton extends StatelessWidget {
+  const _RoundIconButton({required this.icon, required this.onPressed});
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onPressed,
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: Icon(icon, size: 18),
         ),
       ),
     );
