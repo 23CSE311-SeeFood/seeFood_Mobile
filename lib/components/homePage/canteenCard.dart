@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/data/canteen_api/canteen.dart';
-import 'package:seefood/pages/canteen_food_page.dart';
+import 'package:seefood/pages/item_page.dart';
 
 class CanteenCard extends StatelessWidget {
   final Canteen canteen;
@@ -29,7 +29,7 @@ class CanteenCard extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => CanteenFoodPage(canteen: canteen),
+                  builder: (_) => ItemPage(canteen: canteen),
                 ),
               );
             },
