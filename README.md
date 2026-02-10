@@ -28,7 +28,7 @@
 
 # services/ → API calls
 
-# assets/ → Images and resources 
+# assets/ → Images and resources
 
 # \## 4. Main Features
 
