@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '/pages/initPage.dart';
+import 'package:seefood/pages/login_page.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/store/cart/cart_repository.dart';
 
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: const Initpage(),
+        home: const LoginPage(),
       ),
     );
   }
