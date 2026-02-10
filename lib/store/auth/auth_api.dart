@@ -11,7 +11,10 @@ class AuthApi {
   Future<String> register({
     required String name,
     required String email,
+    required String number,
     required String password,
+    String? branch,
+    String? rollNumber,
   }) async {
     final uri = Uri.parse('${AppEnv.apiBaseUrl}/auth/register');
     final response = await _client.post(
@@ -20,15 +23,33 @@ class AuthApi {
       body: jsonEncode({
         'name': name,
         'email': email,
+        'number': number,
         'password': password,
+        if (branch != null) 'branch': branch,
+        if (rollNumber != null) 'rollNumber': rollNumber,
       }),
     );
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Registration failed (${response.statusCode})');
+    final isOk = response.statusCode == 200 || response.statusCode == 201;
+    Map<String, dynamic>? decoded;
+    try {
+      decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      decoded = null;
     }
 
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    if (!isOk) {
+      final message = decoded?['error'] ?? decoded?['message'];
+      throw Exception(
+        message != null
+            ? 'Registration failed (${response.statusCode}): $message'
+            : 'Registration failed (${response.statusCode})',
+      );
+    }
+
+    if (decoded == null) {
+      throw Exception('Invalid response from server');
+    }
     final token = decoded['token'] ??
         decoded['accessToken'] ??
         decoded['jwt'] ??

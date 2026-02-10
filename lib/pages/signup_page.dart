@@ -13,8 +13,11 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _numberController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  final _branchController = TextEditingController();
+  final _rollController = TextEditingController();
 
   final _authApi = AuthApi();
   final _authRepository = AuthRepository();
@@ -26,8 +29,11 @@ class _SignupPageState extends State<SignupPage> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _numberController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
+    _branchController.dispose();
+    _rollController.dispose();
     _authApi.close();
     super.dispose();
   }
@@ -35,6 +41,7 @@ class _SignupPageState extends State<SignupPage> {
   String? _validateInputs() {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
+    final number = _numberController.text.trim();
     final password = _passwordController.text;
     final confirm = _confirmController.text;
 
@@ -47,6 +54,9 @@ class _SignupPageState extends State<SignupPage> {
     }
     if (!emailOk) {
       return 'Please enter a valid email';
+    }
+    if (number.length < 8) {
+      return 'Please enter a valid phone number';
     }
     if (password.length < 6) {
       return 'Password must be at least 6 characters';
@@ -74,7 +84,14 @@ class _SignupPageState extends State<SignupPage> {
       final token = await _authApi.register(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
+        number: _numberController.text.trim(),
         password: _passwordController.text,
+        branch: _branchController.text.trim().isEmpty
+            ? null
+            : _branchController.text.trim(),
+        rollNumber: _rollController.text.trim().isEmpty
+            ? null
+            : _rollController.text.trim(),
       );
       await _authRepository.saveToken(token);
 
@@ -121,6 +138,13 @@ class _SignupPageState extends State<SignupPage> {
               icon: Icons.email_outlined,
             ),
             const SizedBox(height: 14),
+            const _InputLabel(label: 'Phone Number'),
+            _InputField(
+              controller: _numberController,
+              hintText: 'Enter your number',
+              icon: Icons.phone_outlined,
+            ),
+            const SizedBox(height: 14),
             const _InputLabel(label: 'Password'),
             _InputField(
               controller: _passwordController,
@@ -137,6 +161,20 @@ class _SignupPageState extends State<SignupPage> {
               icon: Icons.lock_outline,
               suffixIcon: Icons.visibility_off_outlined,
               obscureText: true,
+            ),
+            const SizedBox(height: 14),
+            const _InputLabel(label: 'Branch (optional)'),
+            _InputField(
+              controller: _branchController,
+              hintText: 'Enter your branch',
+              icon: Icons.school_outlined,
+            ),
+            const SizedBox(height: 14),
+            const _InputLabel(label: 'Roll Number (optional)'),
+            _InputField(
+              controller: _rollController,
+              hintText: 'Enter your roll number',
+              icon: Icons.confirmation_number_outlined,
             ),
             const SizedBox(height: 14),
             if (_error != null)
