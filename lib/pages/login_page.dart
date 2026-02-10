@@ -1,9 +1,82 @@
 import 'package:flutter/material.dart';
+import 'package:seefood/pages/homePage.dart';
+import 'package:seefood/store/auth/auth_api.dart';
+import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/pages/signup_page.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  final _authApi = AuthApi();
+  final _authRepository = AuthRepository();
+
+  String? _error;
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _authApi.close();
+    super.dispose();
+  }
+
+  String? _validate() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final emailOk =
+        RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
+
+    if (!emailOk) {
+      return 'Please enter a valid email';
+    }
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
+  }
+
+  Future<void> _login() async {
+    final validationError = _validate();
+    if (validationError != null) {
+      setState(() => _error = validationError);
+      return;
+    }
+
+    if (_isSubmitting) return;
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
+
+    try {
+      final token = await _authApi.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      await _authRepository.saveToken(token);
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const Homepage()),
+      );
+    } catch (e) {
+      setState(() => _error = e.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -130,20 +203,34 @@ class LoginPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    _InputLabel(label: 'Email'),
-                    const _InputField(
+                    const _InputLabel(label: 'Email'),
+                    _InputField(
+                      controller: _emailController,
                       hintText: 'Enter your email',
                       icon: Icons.email_outlined,
                     ),
                     const SizedBox(height: 14),
-                    _InputLabel(label: 'Password'),
-                    const _InputField(
+                    const _InputLabel(label: 'Password'),
+                    _InputField(
+                      controller: _passwordController,
                       hintText: 'Enter password',
                       icon: Icons.lock_outline,
                       suffixIcon: Icons.visibility_off_outlined,
                       obscureText: true,
                     ),
                     const SizedBox(height: 12),
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
                     const Text(
                       'By signing in you agree to our Terms of Service and Privacy Policy',
                       textAlign: TextAlign.center,
@@ -156,20 +243,29 @@ class LoginPage extends StatelessWidget {
                     SizedBox(
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: _isSubmitting ? null : _login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.secondary,
                           foregroundColor: Colors.white,
                           shape: const StadiumBorder(),
                           elevation: 0,
                         ),
-                        child: const Text(
-                          'Sign In',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Sign In',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -265,12 +361,14 @@ class _InputLabel extends StatelessWidget {
 
 class _InputField extends StatelessWidget {
   const _InputField({
+    required this.controller,
     required this.hintText,
     required this.icon,
     this.suffixIcon,
     this.obscureText = false,
   });
 
+  final TextEditingController controller;
   final String hintText;
   final IconData icon;
   final IconData? suffixIcon;
@@ -279,6 +377,7 @@ class _InputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
         prefixIcon: Icon(icon),
