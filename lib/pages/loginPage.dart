@@ -3,7 +3,7 @@ import 'package:seefood/pages/homePage.dart';
 import 'package:seefood/store/auth/auth_api.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/themes/app_colors.dart';
-import 'package:seefood/pages/signup_page.dart';
+import 'package:seefood/pages/signupPage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

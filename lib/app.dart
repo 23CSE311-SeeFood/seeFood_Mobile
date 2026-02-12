@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:seefood/pages/login_page.dart';
+import 'package:seefood/pages/loginPage.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/store/cart/cart_repository.dart';
 
