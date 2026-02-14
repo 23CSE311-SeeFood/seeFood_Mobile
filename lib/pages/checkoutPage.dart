@@ -101,6 +101,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cart = context.watch<CartController>();
+    final subtotal = cart.totalPrice;
+    final gst = subtotal * 0.05;
+    final total = subtotal + gst;
+
     return Scaffold(
       backgroundColor: AppColors.grayground,
       appBar: AppBar(
@@ -109,10 +114,96 @@ class _CheckoutPageState extends State<CheckoutPage> {
         elevation: 0,
         title: const Text('Checkout'),
       ),
-      body: const Center(
-        child: Text(
-          'Checkout page (placeholder)',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.foreground,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Create Room',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          'Split the bill before order',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // TODO: create room action
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Create'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Payment Summary',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.foreground,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Column(
+                children: [
+                  _SummaryRow(
+                    label: 'Subtotal',
+                    value: '₹${subtotal.toStringAsFixed(2)}',
+                  ),
+                  const SizedBox(height: 8),
+                  _SummaryRow(
+                    label: 'GST (5%)',
+                    value: '₹${gst.toStringAsFixed(2)}',
+                  ),
+                  const Divider(height: 20),
+                  _SummaryRow(
+                    label: 'Total',
+                    value: '₹${total.toStringAsFixed(2)}',
+                    isBold: true,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: SafeArea(
@@ -146,6 +237,34 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.isBold = false,
+  });
+
+  final String label;
+  final String value;
+  final bool isBold;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontSize: 14,
+      fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+      color: Colors.black87,
+    );
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: style),
+        Text(value, style: style),
+      ],
     );
   }
 }
