@@ -59,11 +59,12 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final token = await _authApi.login(
+      final result = await _authApi.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      await _authRepository.saveToken(token);
+      await _authRepository.saveToken(result.token);
+      await _authRepository.saveProfile(result.profile);
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(

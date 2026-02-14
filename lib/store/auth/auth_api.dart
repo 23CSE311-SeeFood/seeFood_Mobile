@@ -2,13 +2,14 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:seefood/data/app_env.dart';
+import 'package:seefood/store/auth/auth_profile.dart';
 
 class AuthApi {
   AuthApi({http.Client? client}) : _client = client ?? http.Client();
 
   final http.Client _client;
 
-  Future<String> register({
+  Future<AuthResult> register({
     required String name,
     required String email,
     required String number,
@@ -58,10 +59,14 @@ class AuthApi {
     if (token is! String || token.isEmpty) {
       throw Exception('Token missing in response');
     }
-    return token;
+    final student = decoded['student'];
+    final profile = student is Map<String, dynamic>
+        ? AuthProfile.fromJson(student)
+        : AuthProfile(name: name, email: email, number: number);
+    return AuthResult(token: token, profile: profile);
   }
 
-  Future<String> login({
+  Future<AuthResult> login({
     required String email,
     required String password,
   }) async {
@@ -104,8 +109,19 @@ class AuthApi {
     if (token is! String || token.isEmpty) {
       throw Exception('Token missing in response');
     }
-    return token;
+    final student = decoded['student'];
+    final profile = student is Map<String, dynamic>
+        ? AuthProfile.fromJson(student)
+        : AuthProfile(name: email.split('@').first, email: email);
+    return AuthResult(token: token, profile: profile);
   }
 
   void close() => _client.close();
+}
+
+class AuthResult {
+  AuthResult({required this.token, required this.profile});
+
+  final String token;
+  final AuthProfile profile;
 }

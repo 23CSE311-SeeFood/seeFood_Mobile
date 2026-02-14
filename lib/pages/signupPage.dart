@@ -81,7 +81,7 @@ class _SignupPageState extends State<SignupPage> {
     });
 
     try {
-      final token = await _authApi.register(
+      final result = await _authApi.register(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         number: _numberController.text.trim(),
@@ -93,7 +93,8 @@ class _SignupPageState extends State<SignupPage> {
             ? null
             : _rollController.text.trim(),
       );
-      await _authRepository.saveToken(token);
+      await _authRepository.saveToken(result.token);
+      await _authRepository.saveProfile(result.profile);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
