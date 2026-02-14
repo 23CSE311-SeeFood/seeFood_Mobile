@@ -5,6 +5,7 @@ import 'package:seefood/components/homePage/canteenCard.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/data/canteen_api/canteen_api.dart';
 import 'package:seefood/data/canteen_api/canteen.dart';
+import 'package:seefood/pages/profilePage.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -67,6 +68,12 @@ class _HomepageState extends State<Homepage> {
       bottomNavigationBar: BottomPillNav(
         currentIndex: _currentIndex,
         onTap: (index) {
+          if (index == 3) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ProfilePage()),
+            );
+            return;
+          }
           setState(() {
             _currentIndex = index;
           });
