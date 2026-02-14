@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seefood/components/checkoutPage/createRoomCard.dart';
+import 'package:seefood/components/checkoutPage/paymentSummaryCard.dart';
 import 'package:seefood/payment/razorpay_order_api.dart';
 import 'package:seefood/payment/razorpay_service.dart';
+import 'package:seefood/pages/loginPage.dart';
+import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/themes/app_colors.dart';
 
@@ -102,6 +106,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartController>();
+    final authRepository = context.watch<AuthRepository>();
+    final isLoggedIn =
+        (authRepository.getToken() ?? '').trim().isNotEmpty;
     final subtotal = cart.totalPrice;
     final gst = subtotal * 0.05;
     final total = subtotal + gst;
@@ -119,52 +126,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.foreground,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Create Room',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          'Split the bill before order',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // TODO: create room action
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text('Create'),
-                  ),
-                ],
-              ),
+            CreateRoomCard(
+              onCreate: () {
+                // TODO: create room action
+              },
             ),
             const SizedBox(height: 20),
             Text(
@@ -176,32 +141,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
             const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.foreground,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: Column(
-                children: [
-                  _SummaryRow(
-                    label: 'Subtotal',
-                    value: '₹${subtotal.toStringAsFixed(2)}',
-                  ),
-                  const SizedBox(height: 8),
-                  _SummaryRow(
-                    label: 'GST (5%)',
-                    value: '₹${gst.toStringAsFixed(2)}',
-                  ),
-                  const Divider(height: 20),
-                  _SummaryRow(
-                    label: 'Total',
-                    value: '₹${total.toStringAsFixed(2)}',
-                    isBold: true,
-                  ),
-                ],
-              ),
+            PaymentSummaryCard(
+              subtotal: subtotal,
+              gst: gst,
+              total: total,
             ),
           ],
         ),
@@ -211,7 +154,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
         child: SizedBox(
           height: 52,
           child: ElevatedButton(
-            onPressed: _isPaying ? null : _startPayment,
+            onPressed: _isPaying
+                ? null
+                : () {
+                    if (!isLoggedIn) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const LoginPage(),
+                        ),
+                      );
+                      return;
+                    }
+                    _startPayment();
+                  },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2B5F06),
               foregroundColor: Colors.white,
@@ -227,9 +182,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       color: Colors.white,
                     ),
                   )
-                : const Text(
-                    'Pay',
-                    style: TextStyle(
+                : Text(
+                    isLoggedIn ? 'Pay' : 'Login to order',
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -237,34 +192,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({
-    required this.label,
-    required this.value,
-    this.isBold = false,
-  });
-
-  final String label;
-  final String value;
-  final bool isBold;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = TextStyle(
-      fontSize: 14,
-      fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
-      color: Colors.black87,
-    );
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: style),
-        Text(value, style: style),
-      ],
     );
   }
 }
