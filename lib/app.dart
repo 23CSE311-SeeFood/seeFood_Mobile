@@ -22,7 +22,8 @@ class MyApp extends StatelessWidget {
         Provider<CartRepository>.value(value: cartRepository),
         Provider<AuthRepository>.value(value: authRepository),
         ChangeNotifierProvider<CartController>(
-          create: (_) => CartController(cartRepository)..load(),
+          create: (_) =>
+              CartController(cartRepository, authRepository)..load(),
         ),
       ],
       child: MaterialApp(
