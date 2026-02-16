@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:seefood/pages/mainPage.dart';
 import 'package:seefood/store/auth/auth_api.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
