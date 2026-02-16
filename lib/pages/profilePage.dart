@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:seefood/pages/loginPage.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/themes/app_colors.dart';
+import 'package:seefood/pages/homePage.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -55,7 +56,7 @@ class ProfilePage extends StatelessWidget {
                   await authRepository.clearAll();
                   if (!context.mounted) return;
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
+                    MaterialPageRoute(builder: (_) => const Homepage()),
                     (_) => false,
                   );
                 },

@@ -102,17 +102,23 @@ class _LoginPageState extends State<LoginPage> {
                     Positioned(
                       left: 16,
                       top: 16,
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: AppColors.foreground.withOpacity(0.35),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new,
-                          size: 16,
-                          color: Colors.white,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).maybePop();
+                        },
+                        borderRadius: BorderRadius.circular(18),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.foreground.withOpacity(0.35),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
