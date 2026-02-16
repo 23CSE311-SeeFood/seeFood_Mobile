@@ -9,6 +9,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: AppColors.grayground,
       elevation: 0,
+      automaticallyImplyLeading: false,
       toolbarHeight: 100,
       title: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
