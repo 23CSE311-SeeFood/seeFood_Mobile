@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:seefood/components/homePage/canteenCard.dart';
-import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/data/canteen_api/canteen_api.dart';
 import 'package:seefood/data/canteen_api/canteen.dart';
 
