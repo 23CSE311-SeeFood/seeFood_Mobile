@@ -158,11 +158,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ? null
                 : () {
                     if (!isLoggedIn) {
-                      Navigator.of(context).push(
+                      Navigator.of(context)
+                          .push<bool>(
                         MaterialPageRoute(
                           builder: (_) => const LoginPage(),
                         ),
-                      );
+                      )
+                          .then((_) {
+                        if (mounted) {
+                          setState(() {});
+                        }
+                      });
                       return;
                     }
                     _startPayment();

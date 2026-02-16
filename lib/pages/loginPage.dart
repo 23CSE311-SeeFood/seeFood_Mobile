@@ -67,9 +67,7 @@ class _LoginPageState extends State<LoginPage> {
       await _authRepository.saveProfile(result.profile);
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainPage()),
-      );
+      Navigator.of(context).pop(true);
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {
