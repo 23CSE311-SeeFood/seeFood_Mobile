@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:seefood/pages/homePage.dart';
+import 'package:seefood/pages/mainPage.dart';
 import 'package:seefood/store/auth/auth_api.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/themes/app_colors.dart';
@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const Homepage()),
+        MaterialPageRoute(builder: (_) => const MainPage()),
       );
     } catch (e) {
       setState(() => _error = e.toString());
