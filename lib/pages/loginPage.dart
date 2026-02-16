@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:seefood/pages/mainPage.dart';
 import 'package:seefood/store/auth/auth_api.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
+import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/pages/signupPage.dart';
 
@@ -65,6 +67,8 @@ class _LoginPageState extends State<LoginPage> {
       );
       await _authRepository.saveToken(result.token);
       await _authRepository.saveProfile(result.profile);
+      await context.read<CartController>().syncLocalToServerIfNeeded();
+      await context.read<CartController>().load();
 
       if (!mounted) return;
       Navigator.of(context).pop(true);

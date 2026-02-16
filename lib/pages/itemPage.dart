@@ -106,16 +106,19 @@ class _ItemPageState extends State<ItemPage> {
                     return const Center(child: Text('No items found'));
                   }
 
-                  return ListView.separated(
-                    padding: const EdgeInsets.only(bottom: 90),
-                    itemCount: items.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      return ItemCard(item: items[index]);
-                    },
-                  );
-                },
-              ),
+                return ListView.separated(
+                  padding: const EdgeInsets.only(bottom: 90),
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    return ItemCard(
+                      item: items[index],
+                      canteenId: widget.canteen.id,
+                    );
+                  },
+                );
+              },
+            ),
             ),
             const Positioned.fill(
               child: PlateBar(),
