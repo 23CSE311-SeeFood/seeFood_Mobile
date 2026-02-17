@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/data/canteen_api/canteen.dart';
-import 'package:seefood/pages/itemPage.dart';
+import 'package:seefood/pages/item_page.dart';
 
 class CanteenCard extends StatelessWidget {
   final Canteen canteen;

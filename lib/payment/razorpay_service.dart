@@ -1,5 +1,4 @@
 import 'package:razorpay_flutter/razorpay_flutter.dart';
-import 'package:seefood/data/app_env.dart';
 
 class RazorpayService {
   RazorpayService({
@@ -27,13 +26,8 @@ class RazorpayService {
     String? orderId,
     Map<String, String>? notes,
   }) {
-    final key = AppEnv.razorpayKey;
-    if (key.isEmpty) {
-      throw Exception('Missing RAZORPAY_KEY in .env');
-    }
-
     final options = {
-      'key': key,
+      'key': 'rzp_test_1DP5mmOlF5G5ag', // TODO: replace with your Razorpay key.
       'amount': amountInPaise,
       'name': name,
       'description': description,
