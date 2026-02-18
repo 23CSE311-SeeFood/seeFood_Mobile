@@ -6,4 +6,7 @@ class AppEnv {
 
   static String get apiKey =>
       dotenv.get('API_KEY');
+
+  static String get razorpayKey =>
+      dotenv.get('RAZORPAY_KEY');
 }
