@@ -6,9 +6,13 @@
 
 
 
-This repository contains the mobile application for the seeFood project.  
+This repository contains the mobile application for the \*\*seeFood\*\* project.  
 
 It provides the user interface for interacting with the system.
+
+
+
+---
 
 
 
@@ -24,15 +28,23 @@ It provides the user interface for interacting with the system.
 
 
 
+---
+
+
+
 \## Technologies Used
 
 
 
-\- React / Next.js
+\- React / Next.js  
 
-\- JavaScript
+\- JavaScript  
 
-\- CSS
+\- CSS  
+
+
+
+---
 
 
 
@@ -41,4 +53,6 @@ It provides the user interface for interacting with the system.
 
 
 The purpose of this application is to provide a simple and user-friendly interface for the seeFood system.
+
+
 
