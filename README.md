@@ -1,8 +1,8 @@
-\# seeFood Mobile Application
+# seeFood Mobile Application
 
 
 
-\## Description
+## Description
 
 
 
@@ -16,31 +16,15 @@ It provides the user interface for interacting with the system.
 
 
 
-\## How It Works
+## How It Works
 
 
 
-1\. The user interacts with the mobile user interface.
+1. The user interacts with the mobile user interface.
 
-2\. The application processes user actions.
+2. The application processes user actions.
 
-3\. The system responds and displays results.
-
-
-
----
-
-
-
-\## Technologies Used
-
-
-
-\- React / Next.js  
-
-\- JavaScript  
-
-\- CSS  
+3. The system responds and displays results.
 
 
 
@@ -48,7 +32,23 @@ It provides the user interface for interacting with the system.
 
 
 
-\## Purpose
+## Technologies Used
+
+
+
+- React / Next.js  
+
+- JavaScript  
+
+- CSS  
+
+
+
+---
+
+
+
+## Purpose
 
 
 
