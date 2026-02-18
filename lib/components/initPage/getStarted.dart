@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seefood/themes/app_colors.dart';
-import 'package:seefood/pages/homePage.dart'; // 👈 import target page
+import 'package:seefood/pages/mainPage.dart';
 
 class GetStarted extends StatelessWidget {
   const GetStarted({super.key});
@@ -14,7 +14,7 @@ class GetStarted extends StatelessWidget {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const Homepage(),
+              builder: (context) => const MainPage(),
             ),
           );
         },

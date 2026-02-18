@@ -7,14 +7,22 @@ import 'package:seefood/pages/profilePage.dart';
 import 'package:seefood/themes/app_colors.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  const MainPage({super.key, this.initialIndex = 0});
+
+  final int initialIndex;
 
   @override
   State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  int _index = 0;
+  late int _index;
+
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.initialIndex.clamp(0, 3);
+  }
 
   void _handleLogout() {
     setState(() {

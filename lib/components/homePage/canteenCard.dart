@@ -40,11 +40,16 @@ class CanteenCard extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     height: 200,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(25),
-                      ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(25),
+                      child: canteen.imageUrl != null &&
+                              canteen.imageUrl!.trim().isNotEmpty
+                          ? Image.network(
+                              canteen.imageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _FallbackImage(),
+                            )
+                          : _FallbackImage(),
                     ),
                   ),
                   const Spacer(),
@@ -91,6 +96,25 @@ class CanteenCard extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FallbackImage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.storefront,
+          size: 48,
+          color: Colors.white,
         ),
       ),
     );

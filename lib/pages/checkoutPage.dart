@@ -6,6 +6,7 @@ import 'package:seefood/payment/order_api.dart';
 import 'package:seefood/payment/order_verify_api.dart';
 import 'package:seefood/payment/razorpay_service.dart';
 import 'package:seefood/pages/loginPage.dart';
+import 'package:seefood/pages/mainPage.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/themes/app_colors.dart';
@@ -22,6 +23,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
   late final OrderApi _orderApi;
   late final OrderVerifyApi _verifyApi;
   bool _isPaying = false;
+
+  void _goToOrders() {
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const MainPage(initialIndex: 2),
+      ),
+      (_) => false,
+    );
+  }
 
   @override
   void initState() {
@@ -47,6 +58,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Verify failed: $e')),
             );
+          } finally {
+            _goToOrders();
           }
         }();
       },
@@ -55,12 +68,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Payment failed: ${response.message}')),
         );
+        _goToOrders();
       },
       onExternalWallet: (response) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('External wallet: ${response.walletName}')),
         );
+        _goToOrders();
       },
     );
   }
