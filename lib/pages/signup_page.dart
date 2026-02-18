@@ -99,8 +99,10 @@ class _SignupPageState extends State<SignupPage> {
       await authRepository.saveToken(result.token);
       await authRepository.saveProfile(result.profile);
 
-      final cart = context.read<CartController>();
+      await authRepository.saveProfile(result.profile);
       if (!mounted) return;
+
+      final cart = context.read<CartController>();
       await cart.syncLocalToServerIfNeeded();
 
       if (!mounted) return;
