@@ -1,50 +1,44 @@
-# \# seeFood Mobile Application
+\# seeFood Mobile Application
 
-# 
 
-# \## 1. Description
 
-# This repository contains the mobile application of the seeFood project.
+\## Description
 
-# It provides the user interface for interacting with the system.
 
-# 
 
-# \## 2. How It Works
+This repository contains the mobile application for the seeFood project.  
 
-# 1\. User interacts with the mobile UI.
+It provides the user interface for interacting with the system.
 
-# 2\. Requests are sent to backend APIs.
 
-# 3\. Responses are displayed to the user.
 
-# 
+\## How It Works
 
-# \## 3. Project Structure
 
-# components/ → UI components
 
-# screens/ → Application screens
+1\. The user interacts with the mobile user interface.
 
-# services/ → API calls
+2\. The application processes user actions.
 
-# assets/ → Images and resources
+3\. The system responds and displays results.
 
-# \## 4. Main Features
 
-# \- User-friendly interface
 
-# \- Data visualization
+\## Technologies Used
 
-# \- Backend API integration
 
-# 
 
-# \## 5. Technologies Used
+\- React / Next.js
 
-# \- React Native
+\- JavaScript
 
-# \- JavaScript
+\- CSS
 
-# \- REST API
+
+
+\## Purpose
+
+
+
+The purpose of this application is to provide a simple and user-friendly interface for the seeFood system.
 
