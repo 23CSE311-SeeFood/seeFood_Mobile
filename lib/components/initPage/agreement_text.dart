@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class aggrementText extends StatelessWidget {
-  const aggrementText({super.key});
+class AgreementText extends StatelessWidget {
+  const AgreementText({super.key});
 
   @override
   Widget build(BuildContext context) {

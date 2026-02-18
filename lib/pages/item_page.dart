@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:seefood/components/itemPage/itemCard.dart';
+import 'package:seefood/components/itemPage/item_card.dart';
 import 'package:seefood/components/itemPage/plate_bar.dart';
 import 'package:seefood/data/canteen_api/canteen.dart';
 import 'package:seefood/data/canteen_api/canteen_api.dart';
@@ -63,7 +63,7 @@ class _ItemPageState extends State<ItemPage> {
                 return ListView.separated(
                   padding: const EdgeInsets.only(bottom: 90),
                   itemCount: items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  separatorBuilder: (_, _) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     return ItemCard(
                       item: items[index],

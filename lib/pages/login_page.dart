@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:seefood/pages/mainPage.dart';
+import 'package:seefood/pages/main_page.dart';
 import 'package:seefood/store/auth/auth_api.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/themes/app_colors.dart';
-import 'package:seefood/pages/signupPage.dart';
+import 'package:seefood/pages/signup_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -64,6 +64,7 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      if (!mounted) return;
       final authRepository = context.read<AuthRepository>();
       await authRepository.saveToken(result.token);
       await authRepository.saveProfile(result.profile);
@@ -117,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: AppColors.foreground.withOpacity(0.35),
+                            color: AppColors.foreground.withValues(alpha: 0.35),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -137,7 +138,7 @@ class _LoginPageState extends State<LoginPage> {
                             width: 68,
                             height: 68,
                             decoration: BoxDecoration(
-                              color: AppColors.foreground.withOpacity(0.25),
+                              color: AppColors.foreground.withValues(alpha: 0.25),
                               borderRadius: BorderRadius.circular(18),
                             ),
                             child: const Center(

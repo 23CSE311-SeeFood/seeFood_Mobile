@@ -22,7 +22,9 @@ class RazorpayOrderApi {
       body: jsonEncode({
         'amount': amountInPaise,
         'currency': currency,
+        // ignore: use_null_aware_elements
         if (receipt != null) 'receipt': receipt,
+        // ignore: use_null_aware_elements
         if (notes != null) 'notes': notes,
       }),
     );

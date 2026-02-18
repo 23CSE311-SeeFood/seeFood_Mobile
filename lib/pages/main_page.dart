@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:seefood/components/common/navBar.dart';
-import 'package:seefood/components/homePage/appBar.dart';
-import 'package:seefood/pages/homePage.dart';
-import 'package:seefood/pages/ordersPage.dart';
-import 'package:seefood/pages/profilePage.dart';
+import 'package:seefood/components/common/nav_bar.dart';
+import 'package:seefood/components/homePage/app_bar.dart';
+import 'package:seefood/pages/home_page.dart';
+import 'package:seefood/pages/orders_page.dart';
+import 'package:seefood/pages/profile_page.dart';
 import 'package:seefood/themes/app_colors.dart';
 
 class MainPage extends StatefulWidget {

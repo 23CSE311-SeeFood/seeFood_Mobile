@@ -23,7 +23,7 @@ class BottomPillNav extends StatelessWidget {
           borderRadius: BorderRadius.circular(100), // Fully rounded main pill
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 24,
               offset: const Offset(0, 8),
               spreadRadius: 2,
@@ -56,7 +56,7 @@ class BottomPillNav extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? AppColors.primary.withOpacity(0.12)
+              ? AppColors.primary.withValues(alpha: 0.12)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(100), // Full rounded corners
         ),
@@ -68,7 +68,7 @@ class BottomPillNav extends StatelessWidget {
               icon,
               color: isActive
                   ? AppColors.primary
-                  : Colors.grey.withOpacity(0.6),
+                  : Colors.grey.withValues(alpha: 0.6),
               size: 24,
             ),
             const SizedBox(height: 4),

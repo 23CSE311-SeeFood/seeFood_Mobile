@@ -94,6 +94,7 @@ class _SignupPageState extends State<SignupPage> {
             ? null
             : _rollController.text.trim(),
       );
+      if (!mounted) return;
       final authRepository = context.read<AuthRepository>();
       await authRepository.saveToken(result.token);
       await authRepository.saveProfile(result.profile);
