@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:seefood/store/auth/auth_api.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
+import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/themes/app_colors.dart';
 
 class SignupPage extends StatefulWidget {
@@ -20,7 +22,6 @@ class _SignupPageState extends State<SignupPage> {
   final _rollController = TextEditingController();
 
   final _authApi = AuthApi();
-  final _authRepository = AuthRepository();
 
   String? _error;
   bool _isSubmitting = false;
@@ -93,8 +94,12 @@ class _SignupPageState extends State<SignupPage> {
             ? null
             : _rollController.text.trim(),
       );
-      await _authRepository.saveToken(result.token);
-      await _authRepository.saveProfile(result.profile);
+      final authRepository = context.read<AuthRepository>();
+      await authRepository.saveToken(result.token);
+      await authRepository.saveProfile(result.profile);
+
+      final cart = context.read<CartController>();
+      await cart.syncLocalToServerIfNeeded();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

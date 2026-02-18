@@ -3,16 +3,35 @@ import 'package:seefood/store/cart/cart_item.dart';
 
 class CartRepository {
   static const String _boxName = 'cart_items';
+  static const String _metaBoxName = 'cart_meta';
+  static const String _canteenIdKey = 'canteen_id';
 
   Box<CartItem>? _box;
+  Box<int>? _metaBox;
 
   Future<void> init() async {
     _box = await Hive.openBox<CartItem>(_boxName);
+    _metaBox = await Hive.openBox<int>(_metaBoxName);
   }
 
   List<CartItem> getItems() {
     _ensureReady();
     return _box!.values.toList(growable: false);
+  }
+
+  int? getCanteenId() {
+    if (_metaBox == null) return null;
+    return _metaBox!.get(_canteenIdKey);
+  }
+
+  Future<void> setCanteenId(int canteenId) async {
+    _ensureReady();
+    await _metaBox!.put(_canteenIdKey, canteenId);
+  }
+
+  Future<void> clearCanteenId() async {
+    _ensureReady();
+    await _metaBox!.delete(_canteenIdKey);
   }
 
   Future<void> addItem(CartItem item) async {
@@ -43,6 +62,14 @@ class CartRepository {
     await _box!.put(itemId, existing.copyWith(quantity: quantity));
   }
 
+  Future<void> replaceItems(List<CartItem> items) async {
+    _ensureReady();
+    await _box!.clear();
+    for (final item in items) {
+      await _box!.put(item.itemId, item);
+    }
+  }
+
   Future<void> removeItem(String itemId) async {
     _ensureReady();
     await _box!.delete(itemId);
@@ -51,10 +78,11 @@ class CartRepository {
   Future<void> clear() async {
     _ensureReady();
     await _box!.clear();
+    await _metaBox!.delete(_canteenIdKey);
   }
 
   void _ensureReady() {
-    if (_box == null) {
+    if (_box == null || _metaBox == null) {
       throw StateError('CartRepository not initialized. Call init() first.');
     }
   }

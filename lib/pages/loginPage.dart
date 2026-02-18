@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:seefood/pages/homePage.dart';
+import 'package:provider/provider.dart';
+import 'package:seefood/pages/mainPage.dart';
 import 'package:seefood/store/auth/auth_api.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
+import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/pages/signupPage.dart';
 
@@ -17,7 +19,6 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   final _authApi = AuthApi();
-  final _authRepository = AuthRepository();
 
   String? _error;
   bool _isSubmitting = false;
@@ -63,13 +64,21 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      await _authRepository.saveToken(result.token);
-      await _authRepository.saveProfile(result.profile);
+      final authRepository = context.read<AuthRepository>();
+      await authRepository.saveToken(result.token);
+      await authRepository.saveProfile(result.profile);
+
+      final cart = context.read<CartController>();
+      await cart.syncLocalToServerIfNeeded();
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const Homepage()),
-      );
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop(true);
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainPage()),
+        );
+      }
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {
@@ -102,17 +111,20 @@ class _LoginPageState extends State<LoginPage> {
                     Positioned(
                       left: 16,
                       top: 16,
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: AppColors.foreground.withOpacity(0.35),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new,
-                          size: 16,
-                          color: Colors.white,
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(context).maybePop(),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.foreground.withOpacity(0.35),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),

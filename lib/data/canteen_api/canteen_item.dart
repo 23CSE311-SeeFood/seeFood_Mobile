@@ -5,6 +5,7 @@ class CanteenItem {
   final num? price;
   final String? imageUrl;
   final num? rating;
+  final int? canteenId;
 
   CanteenItem({
     required this.id,
@@ -13,6 +14,7 @@ class CanteenItem {
     this.price,
     this.imageUrl,
     this.rating,
+    this.canteenId,
   });
 
   factory CanteenItem.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class CanteenItem {
     final imageUrl =
         (json['imageUrl'] as String?) ?? (json['image_url'] as String?);
     final rating = json['rating'] as num?;
+    final canteenId = json['canteenId'] as int? ?? json['canteen_id'] as int?;
 
     return CanteenItem(
       id: id,
@@ -31,6 +34,7 @@ class CanteenItem {
       price: price,
       imageUrl: imageUrl,
       rating: rating,
+      canteenId: canteenId,
     );
   }
 }

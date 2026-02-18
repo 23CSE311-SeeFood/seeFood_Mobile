@@ -58,6 +58,23 @@ class AuthRepository {
     }
   }
 
+  int? getStudentId() {
+    final profile = getProfileOrFromToken();
+    if (profile?.id != null) return profile!.id;
+
+    final token = getToken();
+    if (token == null || token.isEmpty) return null;
+
+    final parts = token.split('.');
+    if (parts.length != 3) return null;
+    final payload = _decodeJwtPayload(parts[1]);
+    if (payload == null) return null;
+
+    final id = payload['studentId'] ?? payload['id'] ?? payload['userId'];
+    if (id is int) return id;
+    return int.tryParse('$id');
+  }
+
   Future<void> clearToken() async {
     await _ensureReady();
     await _box!.delete(_tokenKey);

@@ -65,7 +65,10 @@ class _ItemPageState extends State<ItemPage> {
                   itemCount: items.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
-                    return ItemCard(item: items[index]);
+                    return ItemCard(
+                      item: items[index],
+                      canteenId: widget.canteen.id,
+                    );
                   },
                 );
               },

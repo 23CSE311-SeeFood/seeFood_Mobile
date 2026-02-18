@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seefood/data/canteen_api/canteen_item.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
-import 'package:seefood/store/cart/cart_item.dart';
 
 class ItemCard extends StatelessWidget {
-  const ItemCard({super.key, required this.item});
+  const ItemCard({super.key, required this.item, required this.canteenId});
 
   final CanteenItem item;
+  final int canteenId;
 
   @override
   Widget build(BuildContext context) {
@@ -77,12 +77,8 @@ class ItemCard extends StatelessWidget {
                   ? _AddToDishButton(
                       onPressed: () {
                         cart.addItem(
-                          CartItem(
-                            itemId: itemId,
-                            name: item.name,
-                            price: item.price,
-                            imageUrl: item.imageUrl,
-                          ),
+                          item: item,
+                          canteenId: canteenId,
                         );
                       },
                     )

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seefood/components/checkoutPage/createRoomCard.dart';
 import 'package:seefood/components/checkoutPage/paymentSummaryCard.dart';
-import 'package:seefood/payment/razorpay_order_api.dart';
+import 'package:seefood/payment/order_api.dart';
+import 'package:seefood/payment/order_verify_api.dart';
 import 'package:seefood/payment/razorpay_service.dart';
 import 'package:seefood/pages/loginPage.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
@@ -18,20 +19,36 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   late final RazorpayService _razorpayService;
-  late final RazorpayOrderApi _orderApi;
+  late final OrderApi _orderApi;
+  late final OrderVerifyApi _verifyApi;
   bool _isPaying = false;
 
   @override
   void initState() {
     super.initState();
-    _orderApi = RazorpayOrderApi();
+    _orderApi = OrderApi();
+    _verifyApi = OrderVerifyApi();
     _razorpayService = RazorpayService(
       onSuccess: (response) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Payment successful')),
-        );
-        // TODO: clear cart after successful payment if desired.
+        () async {
+          try {
+            await _verifyApi.verifyPayment(
+              orderId: response.orderId ?? '',
+              paymentId: response.paymentId ?? '',
+              signature: response.signature ?? '',
+            );
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Payment verified')),
+            );
+          } catch (e) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Verify failed: $e')),
+            );
+          }
+        }();
       },
       onError: (response) {
         if (!mounted) return;
@@ -51,15 +68,24 @@ class _CheckoutPageState extends State<CheckoutPage> {
   @override
   void dispose() {
     _orderApi.close();
+    _verifyApi.close();
     _razorpayService.dispose();
     super.dispose();
   }
 
   Future<void> _startPayment() async {
     final cart = context.read<CartController>();
+    final authRepository = context.read<AuthRepository>();
+    final studentId = authRepository.getStudentId();
     if (cart.totalQuantity == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Your plate is empty')),
+      );
+      return;
+    }
+    if (studentId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login required to place order')),
       );
       return;
     }
@@ -68,26 +94,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
     setState(() => _isPaying = true);
 
     try {
-      final amountInPaise = (cart.totalPrice * 100).round();
+      final order = await _orderApi.createFromCart(
+        studentId: studentId,
+      );
+
       final itemsSummary = cart.items
           .map((item) => '${item.name} x${item.quantity}')
           .join(', ');
 
-      final orderId = await _orderApi.createOrder(
-        amountInPaise: amountInPaise,
-        receipt: 'plate_${DateTime.now().millisecondsSinceEpoch}',
-        notes: {
-          'items': itemsSummary,
-        },
-      );
-
       _razorpayService.openCheckout(
-        amountInPaise: amountInPaise,
+        amountInPaise: order.amountInPaise,
         name: 'SeeFood',
         description: 'Plate (${cart.totalQuantity} items)',
         contact: '9999999999',
         email: 'test@example.com',
-        orderId: orderId,
+        orderId: order.orderId,
         notes: {
           'items': itemsSummary,
         },
