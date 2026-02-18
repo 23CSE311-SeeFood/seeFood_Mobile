@@ -89,7 +89,7 @@ class _OrdersPageState extends State<OrdersPage> {
 
                 return ListView.separated(
                   itemCount: orders.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     return _OrderCard(order: orders[index]);
                   },
@@ -119,12 +119,12 @@ class _OrderCard extends StatelessWidget {
     final status = order.status ?? 'CREATED';
     final orderId = order.orderId ?? 'Order #${order.id}';
     final total = order.total ?? 0;
-    final canteen = order.canteenId != null
-        ? 'Canteen #${order.canteenId}'
-        : 'Canteen';
+    final canteen = (order.canteenName ?? '').isNotEmpty
+        ? order.canteenName!
+        : (order.canteenId != null ? 'Canteen #${order.canteenId}' : 'Canteen');
 
     final statusColor = _statusColor(status);
-    final statusBg = statusColor.withOpacity(0.15);
+    final statusBg = statusColor.withValues(alpha: 0.15);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -173,8 +173,11 @@ class _OrderCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: order.items.map((item) {
-              final name =
-                  item.name ?? (item.canteenItemId != null ? 'Item ${item.canteenItemId}' : 'Item');
+              final name = item.name ??
+                  item.canteenItemName ??
+                  (item.canteenItemId != null
+                      ? 'Item ${item.canteenItemId}'
+                      : 'Item');
               return Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(

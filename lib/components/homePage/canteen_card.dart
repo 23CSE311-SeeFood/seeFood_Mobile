@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/data/canteen_api/canteen.dart';
-import 'package:seefood/pages/itemPage.dart';
+import 'package:seefood/pages/item_page.dart';
 
 class CanteenCard extends StatelessWidget {
   final Canteen canteen;
@@ -40,11 +40,16 @@ class CanteenCard extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     height: 200,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(25),
-                      ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(25),
+                      child: canteen.imageUrl != null &&
+                              canteen.imageUrl!.trim().isNotEmpty
+                          ? Image.network(
+                              canteen.imageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => _FallbackImage(),
+                            )
+                          : _FallbackImage(),
                     ),
                   ),
                   const Spacer(),
@@ -91,6 +96,25 @@ class CanteenCard extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FallbackImage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.storefront,
+          size: 48,
+          color: Colors.white,
         ),
       ),
     );

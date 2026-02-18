@@ -41,7 +41,9 @@ class RazorpayService {
         'contact': contact,
         'email': email,
       },
+      // ignore: use_null_aware_elements
       if (orderId != null) 'order_id': orderId,
+      // ignore: use_null_aware_elements
       if (notes != null) 'notes': notes,
       'retry': {'enabled': true, 'max_count': 1},
     };

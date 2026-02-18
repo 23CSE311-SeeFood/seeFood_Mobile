@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:seefood/components/checkoutPage/createRoomCard.dart';
-import 'package:seefood/components/checkoutPage/paymentSummaryCard.dart';
+import 'package:seefood/components/checkoutPage/create_room_card.dart';
+import 'package:seefood/components/checkoutPage/payment_summary_card.dart';
 import 'package:seefood/payment/order_api.dart';
 import 'package:seefood/payment/order_verify_api.dart';
 import 'package:seefood/payment/razorpay_service.dart';
-import 'package:seefood/pages/loginPage.dart';
+import 'package:seefood/pages/login_page.dart';
+import 'package:seefood/pages/main_page.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/themes/app_colors.dart';
@@ -22,6 +23,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
   late final OrderApi _orderApi;
   late final OrderVerifyApi _verifyApi;
   bool _isPaying = false;
+
+  void _goToOrders() {
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const MainPage(initialIndex: 2),
+      ),
+      (_) => false,
+    );
+  }
 
   @override
   void initState() {
@@ -47,6 +58,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Verify failed: $e')),
             );
+          } finally {
+            _goToOrders();
           }
         }();
       },
@@ -55,12 +68,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Payment failed: ${response.message}')),
         );
+        _goToOrders();
       },
       onExternalWallet: (response) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('External wallet: ${response.walletName}')),
         );
+        _goToOrders();
       },
     );
   }
@@ -119,8 +134,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
         SnackBar(content: Text('Payment init failed: $e')),
       );
     } finally {
-      if (!mounted) return;
-      setState(() => _isPaying = false);
+      if (mounted) {
+        setState(() => _isPaying = false);
+      }
     }
   }
 
