@@ -5,13 +5,8 @@ import 'package:seefood/components/checkoutPage/payment_summary_card.dart';
 import 'package:seefood/payment/order_api.dart';
 import 'package:seefood/payment/order_verify_api.dart';
 import 'package:seefood/payment/razorpay_service.dart';
-<<<<<<< HEAD:lib/pages/checkoutPage.dart
-import 'package:seefood/pages/loginPage.dart';
-import 'package:seefood/pages/mainPage.dart';
-=======
 import 'package:seefood/pages/login_page.dart';
 import 'package:seefood/pages/main_page.dart';
->>>>>>> 36fa9838bfaa99fa54d51849ec2676a1c7bde554:lib/pages/checkout_page.dart
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/themes/app_colors.dart';

@@ -31,28 +31,8 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
-<<<<<<< HEAD
-=======
-      - name: Create .env file
-        run: echo "API_BASE_URL=https://example.com" >> .env
-
->>>>>>> 36fa9838bfaa99fa54d51849ec2676a1c7bde554
       - name: Analyze Code
         run: flutter analyze
 
       - name: Run Tests
         run: flutter test
-<<<<<<< HEAD
-
-      - name: Build APK (Release)
-        run: flutter build apk --release
-
-
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-=======
->>>>>>> 36fa9838bfaa99fa54d51849ec2676a1c7bde554
