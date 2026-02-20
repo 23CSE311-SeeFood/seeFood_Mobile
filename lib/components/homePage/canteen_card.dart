@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/data/canteen_api/canteen.dart';
-import 'package:seefood/pages/itemPage.dart';
+import 'package:seefood/pages/item_page.dart';
 
 class CanteenCard extends StatelessWidget {
   final Canteen canteen;
@@ -47,7 +47,11 @@ class CanteenCard extends StatelessWidget {
                           ? Image.network(
                               canteen.imageUrl!,
                               fit: BoxFit.cover,
+<<<<<<< HEAD:lib/components/homePage/canteenCard.dart
                               errorBuilder: (_, __, ___) => _FallbackImage(),
+=======
+                              errorBuilder: (_, _, _) => _FallbackImage(),
+>>>>>>> 36fa9838bfaa99fa54d51849ec2676a1c7bde554:lib/components/homePage/canteen_card.dart
                             )
                           : _FallbackImage(),
                     ),

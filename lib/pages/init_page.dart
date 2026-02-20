@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:seefood/components/initPage/aggrementText.dart';
-import 'package:seefood/components/initPage/getStarted.dart';
-import 'package:seefood/components/initPage/appBar.dart';
+import 'package:seefood/components/initPage/agreement_text.dart';
+import 'package:seefood/components/initPage/get_started.dart';
+import 'package:seefood/components/initPage/app_bar.dart';
 import '../themes/app_colors.dart';
 
 class Initpage extends StatelessWidget {
@@ -18,7 +18,7 @@ class Initpage extends StatelessWidget {
           child: Column(
             children: const [
               Spacer(),  
-              aggrementText(),
+              AgreementText(),
               SizedBox(height: 12,),      
               GetStarted(),     
               SizedBox(height: 24),

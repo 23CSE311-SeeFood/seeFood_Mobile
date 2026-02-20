@@ -26,7 +26,9 @@ class AuthApi {
         'email': email,
         'number': number,
         'password': password,
+        // ignore: use_null_aware_elements
         if (branch != null) 'branch': branch,
+        // ignore: use_null_aware_elements
         if (rollNumber != null) 'rollNumber': rollNumber,
       }),
     );

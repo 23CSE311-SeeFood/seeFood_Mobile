@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seefood/themes/app_colors.dart';
-import 'package:seefood/pages/mainPage.dart';
+import 'package:seefood/pages/main_page.dart';
 
 class GetStarted extends StatelessWidget {
   const GetStarted({super.key});
