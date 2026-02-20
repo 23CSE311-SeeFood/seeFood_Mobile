@@ -190,13 +190,8 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 18),
                     const _AuthButton(
-                      icon: Icons.g_mobiledata,
-                      label: 'Continue with Google',
-                    ),
-                    const SizedBox(height: 12),
-                    const _AuthButton(
-                      icon: Icons.apple,
-                      label: 'Continue with Apple',
+                      icon: Icons.school_outlined,
+                      label: 'Sign in with College ID',
                     ),
                     const SizedBox(height: 16),
                     Row(
