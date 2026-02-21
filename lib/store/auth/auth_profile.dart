@@ -3,6 +3,8 @@ import 'dart:convert';
 class AuthProfile {
   AuthProfile({
     this.id,
+    this.sub,
+    this.provider,
     required this.name,
     required this.email,
     this.number,
@@ -11,6 +13,8 @@ class AuthProfile {
   });
 
   final int? id;
+  final String? sub;
+  final String? provider;
   final String name;
   final String email;
   final String? number;
@@ -20,6 +24,8 @@ class AuthProfile {
   factory AuthProfile.fromJson(Map<String, dynamic> json) {
     return AuthProfile(
       id: json['id'] is int ? json['id'] as int : int.tryParse('${json['id']}'),
+      sub: json['sub']?.toString(),
+      provider: json['provider']?.toString(),
       name: (json['name'] ?? '').toString(),
       email: (json['email'] ?? '').toString(),
       number: json['number']?.toString(),
@@ -31,6 +37,8 @@ class AuthProfile {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'sub': sub,
+      'provider': provider,
       'name': name,
       'email': email,
       'number': number,

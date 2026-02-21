@@ -6,6 +6,9 @@ import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/pages/signup_page.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:app_links/app_links.dart';
+import 'dart:async';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,15 +22,31 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   final _authApi = AuthApi();
+  late final AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSub;
 
   String? _error;
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _appLinks = AppLinks();
+    _linkSub = _appLinks.uriLinkStream.listen(
+      _handleIncomingLink,
+      onError: (err) {
+        debugPrint('SSO link error: $err');
+      },
+    );
+    _loadInitialLink();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _authApi.close();
+    _linkSub?.cancel();
     super.dispose();
   }
 
@@ -89,6 +108,70 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
+    }
+  }
+
+  Future<void> _loadInitialLink() async {
+    try {
+      final uri = await _appLinks.getInitialLink();
+      if (uri != null) {
+        _handleIncomingLink(uri);
+      }
+    } catch (e) {
+      debugPrint('SSO initial link error: $e');
+    }
+  }
+
+  void _handleIncomingLink(Uri uri) {
+    debugPrint('SSO redirect: $uri');
+
+    String? token = uri.queryParameters['token'] ??
+        uri.queryParameters['jwt'] ??
+        uri.queryParameters['accessToken'] ??
+        uri.queryParameters['access_token'];
+
+    if ((token == null || token.isEmpty) && uri.fragment.isNotEmpty) {
+      final fragParams = Uri.splitQueryString(uri.fragment);
+      token = fragParams['token'] ??
+          fragParams['jwt'] ??
+          fragParams['accessToken'] ??
+          fragParams['access_token'];
+    }
+
+    if (token != null && token.isNotEmpty) {
+      debugPrint('SSO token: $token');
+      _handleSsoToken(token);
+    }
+  }
+
+  void _handleSsoToken(String token) {
+    () async {
+      final authRepository = context.read<AuthRepository>();
+      await authRepository.saveTokenAndProfileFromJwt(token);
+      final profile = authRepository.getProfileOrFromToken();
+      debugPrint('SSO decoded profile: ${profile?.toJson()}');
+
+      final cart = context.read<CartController>();
+      await cart.syncLocalToServerIfNeeded();
+
+      if (!mounted) return;
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop(true);
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainPage()),
+        );
+      }
+    }();
+  }
+
+  Future<void> _launchCollegeSso() async {
+    final uri = Uri.parse('https://e3c8-103-5-112-80.ngrok-free.app/auth/microsoft/login?redirect=seefood://auth');
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open College ID login')),
+      );
     }
   }
 
@@ -189,9 +272,10 @@ class _LoginPageState extends State<LoginPage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 18),
-                    const _AuthButton(
+                    _AuthButton(
                       icon: Icons.school_outlined,
                       label: 'Sign in with College ID',
+                      onPressed: _launchCollegeSso,
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -319,17 +403,22 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class _AuthButton extends StatelessWidget {
-  const _AuthButton({required this.icon, required this.label});
+  const _AuthButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
 
   final IconData icon;
   final String label;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 46,
       child: OutlinedButton.icon(
-        onPressed: () {},
+        onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           backgroundColor: AppColors.grayground,
           foregroundColor: Colors.black87,

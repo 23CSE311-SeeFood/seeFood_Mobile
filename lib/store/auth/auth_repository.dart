@@ -19,6 +19,14 @@ class AuthRepository {
     await _box!.put(_tokenKey, token);
   }
 
+  Future<void> saveTokenAndProfileFromJwt(String token) async {
+    await saveToken(token);
+    final profile = profileFromToken(token);
+    if (profile != null) {
+      await saveProfile(profile);
+    }
+  }
+
   String? getToken() {
     if (_box == null) return null;
     return _box!.get(_tokenKey);
@@ -49,10 +57,10 @@ class AuthRepository {
       if (payload == null) return null;
 
       if (payload['student'] is Map<String, dynamic>) {
-        return AuthProfile.fromJson(payload['student'] as Map<String, dynamic>);
+        return _profileFromPayload(payload['student'] as Map<String, dynamic>);
       }
 
-      return AuthProfile.fromJson(payload);
+      return _profileFromPayload(payload);
     } catch (_) {
       return null;
     }
@@ -70,7 +78,7 @@ class AuthRepository {
     final payload = _decodeJwtPayload(parts[1]);
     if (payload == null) return null;
 
-    final id = payload['studentId'] ?? payload['id'] ?? payload['userId'];
+    final id = payload['studentId'] ?? payload['id'] ?? payload['userId'] ?? payload['sub'];
     if (id is int) return id;
     return int.tryParse('$id');
   }
@@ -101,5 +109,42 @@ class AuthRepository {
     final payload = jsonDecode(decoded);
     if (payload is Map<String, dynamic>) return payload;
     return null;
+  }
+
+  AuthProfile? profileFromToken(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) return null;
+    final payload = _decodeJwtPayload(parts[1]);
+    if (payload == null) return null;
+    if (payload['student'] is Map<String, dynamic>) {
+      return _profileFromPayload(payload['student'] as Map<String, dynamic>);
+    }
+    return _profileFromPayload(payload);
+  }
+
+  AuthProfile _profileFromPayload(Map<String, dynamic> payload) {
+    int? id;
+    final rawId = payload['id'] ?? payload['studentId'] ?? payload['userId'];
+    if (rawId is int) {
+      id = rawId;
+    } else if (rawId != null) {
+      id = int.tryParse('$rawId');
+    }
+
+    final sub = payload['sub']?.toString();
+    if (id == null && sub != null) {
+      id = int.tryParse(sub);
+    }
+
+    return AuthProfile(
+      id: id,
+      sub: sub,
+      provider: payload['provider']?.toString(),
+      name: (payload['name'] ?? '').toString(),
+      email: (payload['email'] ?? '').toString(),
+      number: payload['number']?.toString(),
+      branch: payload['branch']?.toString(),
+      rollNumber: payload['rollNumber']?.toString(),
+    );
   }
 }
