@@ -37,5 +37,30 @@ class OrdersApi {
         .toList(growable: false);
   }
 
+  Future<OrderModel> fetchOrderDetail({
+    required int orderId,
+    String? token,
+  }) async {
+    final uri = Uri.parse('${AppEnv.apiBaseUrl}/orders/$orderId');
+    final response = await _client.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch order (${response.statusCode})');
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw Exception('Invalid order response');
+    }
+
+    return OrderModel.fromJson(decoded);
+  }
+
   void close() => _client.close();
 }

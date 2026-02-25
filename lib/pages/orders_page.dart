@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seefood/orders/order_models.dart';
 import 'package:seefood/orders/orders_api.dart';
+import 'package:seefood/pages/queue_page.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/themes/app_colors.dart';
 
@@ -126,7 +127,11 @@ class _OrderCard extends StatelessWidget {
     final statusColor = _statusColor(status);
     final statusBg = statusColor.withValues(alpha: 0.15);
 
-    return Container(
+    final isTrackable = status.toUpperCase() == 'PAID' ||
+        status.toUpperCase() == 'READY' ||
+        status.toUpperCase() == 'DELIVERED';
+
+    final card = Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.foreground,
@@ -198,8 +203,33 @@ class _OrderCard extends StatelessWidget {
               ),
             ),
           ),
+          if (isTrackable) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Tap to track',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ],
       ),
+    );
+
+    if (!isTrackable) return card;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => QueuePage(orderId: order.id),
+          ),
+        );
+      },
+      child: card,
     );
   }
 
