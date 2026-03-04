@@ -170,6 +170,7 @@ class _QueuePageState extends State<QueuePage> {
         return;
       }
     } catch (e) {
+      debugPrint('Error handling WS message: $e');
     }
   }
 
@@ -417,7 +418,7 @@ class _Pill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

@@ -10,6 +10,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:async';
 
+// ignore_for_file: use_build_context_synchronously
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -33,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     _appLinks = AppLinks();
     _linkSub = _appLinks.uriLinkStream.listen(
-      _handleIncomingLink,
+      (uri) async => await _handleIncomingLink(uri),
       onError: (err) {
         debugPrint('SSO link error: $err');
       },
@@ -122,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _handleIncomingLink(Uri uri) {
+  Future<void> _handleIncomingLink(Uri uri) async {
     debugPrint('SSO redirect: $uri');
 
     String? token = uri.queryParameters['token'] ??
@@ -140,29 +142,27 @@ class _LoginPageState extends State<LoginPage> {
 
     if (token != null && token.isNotEmpty) {
       debugPrint('SSO token: $token');
-      _handleSsoToken(token);
+      await _handleSsoToken(token);
     }
   }
 
-  void _handleSsoToken(String token) {
-    () async {
-      final authRepository = context.read<AuthRepository>();
-      await authRepository.saveTokenAndProfileFromJwt(token);
-      final profile = authRepository.getProfileOrFromToken();
-      debugPrint('SSO decoded profile: ${profile?.toJson()}');
+  Future<void> _handleSsoToken(String token) async {
+    final authRepository = context.read<AuthRepository>();
+    await authRepository.saveTokenAndProfileFromJwt(token);
+    final profile = authRepository.getProfileOrFromToken();
+    debugPrint('SSO decoded profile: ${profile?.toJson()}');
 
-      final cart = context.read<CartController>();
-      await cart.syncLocalToServerIfNeeded();
+    final cart = context.read<CartController>();
+    await cart.syncLocalToServerIfNeeded();
 
-      if (!mounted) return;
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop(true);
-      } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const MainPage()),
-        );
-      }
-    }();
+    if (!mounted) return;
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop(true);
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const MainPage()),
+      );
+    }
   }
 
   Future<void> _launchCollegeSso() async {
