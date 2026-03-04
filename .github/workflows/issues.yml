@@ -1,7 +1,8 @@
 name: CodeRabbit Cleanup
 on:
   pull_request:
-    branches: [ main ]
+    types: [closed]
+
 jobs:
   track_unresolved:
     # Only runs if the PR was actually merged, not just closed
