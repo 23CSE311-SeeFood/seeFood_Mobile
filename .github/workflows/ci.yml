@@ -28,6 +28,12 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Create .env file
+        run: |
+          echo "API_BASE_URL=http://dummy-api.example.com" > .env
+          echo "API_KEY=dummy_key" >> .env
+          echo "RAZORPAY_KEY=dummy_razorpay_key" >> .env
+
       - name: Get Dependencies
         run: flutter pub get
 
