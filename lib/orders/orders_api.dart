@@ -5,15 +5,19 @@ import 'package:seefood/data/app_env.dart';
 import 'package:seefood/orders/order_models.dart';
 
 class OrdersApi {
-  OrdersApi({http.Client? client}) : _client = client ?? http.Client();
+  OrdersApi({http.Client? client, String? baseUrl})
+      : _client = client ?? http.Client(),
+        _baseUrl = baseUrl;
 
   final http.Client _client;
+  final String? _baseUrl;
 
   Future<List<OrderModel>> fetchOrders({
     required int studentId,
     String? token,
   }) async {
-    final uri = Uri.parse('${AppEnv.apiBaseUrl}/orders/student/$studentId');
+    final base = _baseUrl ?? AppEnv.apiBaseUrl;
+    final uri = Uri.parse('$base/orders/student/$studentId');
     final response = await _client.get(
       uri,
       headers: {
@@ -41,7 +45,8 @@ class OrdersApi {
     required int orderId,
     String? token,
   }) async {
-    final uri = Uri.parse('${AppEnv.apiBaseUrl}/orders/$orderId');
+    final base = _baseUrl ?? AppEnv.apiBaseUrl;
+    final uri = Uri.parse('$base/orders/$orderId');
     final response = await _client.get(
       uri,
       headers: {
