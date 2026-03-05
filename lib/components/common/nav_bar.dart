@@ -34,7 +34,7 @@ class BottomPillNav extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _navItem(Icons.home_rounded, "Home", 0),
-            _navItem(Icons.search_rounded, "Search", 1),
+            _navItem(Icons.event_available_rounded, "Bookings", 1),
             _navItem(Icons.receipt_long_rounded, "Orders", 2),
             _navItem(Icons.person_rounded, "Profile", 3),
           ],

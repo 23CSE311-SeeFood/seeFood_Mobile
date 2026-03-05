@@ -7,6 +7,8 @@ import 'package:seefood/payment/order_verify_api.dart';
 import 'package:seefood/payment/razorpay_service.dart';
 import 'package:seefood/pages/login_page.dart';
 import 'package:seefood/pages/main_page.dart';
+import 'package:seefood/rooms/room_api.dart';
+import 'package:seefood/rooms/room_models.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/themes/app_colors.dart';
@@ -22,6 +24,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
   late final RazorpayService _razorpayService;
   late final OrderApi _orderApi;
   late final OrderVerifyApi _verifyApi;
+  late final RoomApi _roomApi;
+  RoomModel? _room;
+  _RoomPayContext? _pendingRoomPay;
   bool _isPaying = false;
 
   void _goToOrders() {
@@ -39,11 +44,48 @@ class _CheckoutPageState extends State<CheckoutPage> {
     super.initState();
     _orderApi = OrderApi();
     _verifyApi = OrderVerifyApi();
+    _roomApi = RoomApi();
     _razorpayService = RazorpayService(
       onSuccess: (response) {
         if (!mounted) return;
         () async {
           try {
+            if (_pendingRoomPay != null) {
+              final ctx = _pendingRoomPay!;
+              final orderId = response.orderId ?? ctx.orderId;
+              final paymentId = response.paymentId;
+              final signature = response.signature;
+
+              if (orderId == null ||
+                  orderId.isEmpty ||
+                  paymentId == null ||
+                  paymentId.isEmpty ||
+                  signature == null ||
+                  signature.isEmpty) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Missing Razorpay fields for room payment'),
+                  ),
+                );
+                return;
+              }
+
+              await _roomApi.verifyMemberPayment(
+                code: ctx.code,
+                studentId: ctx.studentId,
+                orderId: orderId,
+                paymentId: paymentId,
+                signature: signature,
+              );
+              _pendingRoomPay = null;
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Room payment verified')),
+              );
+              return;
+            }
+
             await _verifyApi.verifyPayment(
               orderId: response.orderId ?? '',
               paymentId: response.paymentId ?? '',
@@ -59,7 +101,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
               SnackBar(content: Text('Verify failed: $e')),
             );
           } finally {
-            _goToOrders();
+            if (_pendingRoomPay == null) {
+              _goToOrders();
+            }
           }
         }();
       },
@@ -68,14 +112,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Payment failed: ${response.message}')),
         );
-        _goToOrders();
+        if (_pendingRoomPay == null) {
+          _goToOrders();
+        }
       },
       onExternalWallet: (response) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('External wallet: ${response.walletName}')),
         );
-        _goToOrders();
+        if (_pendingRoomPay == null) {
+          _goToOrders();
+        }
       },
     );
   }
@@ -84,6 +132,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   void dispose() {
     _orderApi.close();
     _verifyApi.close();
+    _roomApi.close();
     _razorpayService.dispose();
     super.dispose();
   }
@@ -109,6 +158,33 @@ class _CheckoutPageState extends State<CheckoutPage> {
     setState(() => _isPaying = true);
 
     try {
+      if (_room != null) {
+        final room = _room!;
+        final pay = await _roomApi.createMemberPayment(
+          code: room.code,
+          studentId: studentId,
+        );
+        if (pay.orderId.isEmpty) {
+          throw Exception('Room payment missing orderId');
+        }
+        _pendingRoomPay = _RoomPayContext(
+          code: room.code,
+          studentId: studentId,
+          orderId: pay.orderId,
+        );
+
+        _razorpayService.openCheckout(
+          amountInPaise: pay.amount,
+          name: 'SeeFood',
+          description: 'Room payment',
+          contact: '9999999999',
+          email: 'test@example.com',
+          orderId: pay.orderId,
+          keyOverride: pay.key,
+        );
+        return;
+      }
+
       final order = await _orderApi.createFromCart(
         studentId: studentId,
       );
@@ -149,6 +225,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final subtotal = cart.totalPrice;
     final gst = subtotal * 0.05;
     final total = subtotal + gst;
+    final studentId = authRepository.getStudentId();
+    final isMemberPaid = _room?.members
+            .any((m) => m.studentId == studentId && m.status == 'PAID') ??
+        false;
+    final isRoomActive = _room != null;
 
     return Scaffold(
       backgroundColor: AppColors.grayground,
@@ -164,8 +245,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             CreateRoomCard(
-              onCreate: () {
-                // TODO: create room action
+              studentId: studentId,
+              onRoomChanged: (room) {
+                setState(() => _room = room);
               },
             ),
             const SizedBox(height: 20),
@@ -191,7 +273,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         child: SizedBox(
           height: 52,
           child: ElevatedButton(
-            onPressed: _isPaying
+            onPressed: _isPaying || (isRoomActive && isMemberPaid)
                 ? null
                 : () {
                     if (!isLoggedIn) {
@@ -220,7 +302,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                   )
                 : Text(
-                    isLoggedIn ? 'Pay' : 'Login to order',
+                    isLoggedIn
+                        ? (isRoomActive
+                            ? (isMemberPaid ? 'Paid' : 'Pay share')
+                            : 'Pay')
+                        : 'Login to order',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -231,4 +317,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ),
     );
   }
+}
+
+class _RoomPayContext {
+  _RoomPayContext({
+    required this.code,
+    required this.studentId,
+    required this.orderId,
+  });
+
+  final String code;
+  final int studentId;
+  final String orderId;
 }

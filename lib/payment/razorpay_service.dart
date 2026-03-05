@@ -25,9 +25,12 @@ class RazorpayService {
     required String contact,
     required String email,
     String? orderId,
+    String? keyOverride,
     Map<String, String>? notes,
   }) {
-    final key = AppEnv.razorpayKey;
+    final key = (keyOverride != null && keyOverride.isNotEmpty)
+        ? keyOverride
+        : AppEnv.razorpayKey;
     if (key.isEmpty) {
       throw Exception('Missing RAZORPAY_KEY in .env');
     }

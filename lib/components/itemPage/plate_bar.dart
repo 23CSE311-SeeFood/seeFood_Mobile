@@ -9,7 +9,10 @@ import 'package:seefood/store/cart/cart_item.dart';
 class PlateBar extends StatefulWidget {
   const PlateBar({
     super.key,
+    this.onCheckout,
   });
+
+  final VoidCallback? onCheckout;
 
   @override
   State<PlateBar> createState() => _PlateBarState();
@@ -130,14 +133,15 @@ class _PlateBarState extends State<PlateBar> with TickerProviderStateMixin {
                                             child: _PlateBody(
                                               items: items,
                                               total: total,
-                                              onCheckout: () {
-                                                Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        const CheckoutPage(),
-                                                  ),
-                                                );
-                                              },
+                                              onCheckout: widget.onCheckout ??
+                                                  () {
+                                                    Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                        builder: (_) =>
+                                                            const CheckoutPage(),
+                                                      ),
+                                                    );
+                                                  },
                                             ),
                                           ),
                                         ),

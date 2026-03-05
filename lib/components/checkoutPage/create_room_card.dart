@@ -1,12 +1,21 @@
-import 'dart:math';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:seefood/data/app_env.dart';
+import 'package:seefood/rooms/room_api.dart';
+import 'package:seefood/rooms/room_models.dart';
 import 'package:seefood/themes/app_colors.dart';
 
 class CreateRoomCard extends StatefulWidget {
-  const CreateRoomCard({super.key, this.onCreate});
+  const CreateRoomCard({
+    super.key,
+    required this.studentId,
+    this.onRoomChanged,
+  });
 
-  final VoidCallback? onCreate;
+  final int? studentId;
+  final ValueChanged<RoomModel?>? onRoomChanged;
 
   @override
   State<CreateRoomCard> createState() => _CreateRoomCardState();
@@ -14,27 +23,110 @@ class CreateRoomCard extends StatefulWidget {
 
 class _CreateRoomCardState extends State<CreateRoomCard>
     with TickerProviderStateMixin {
-  bool _expanded = false;
+  late final RoomApi _roomApi;
+  RoomModel? _room;
   String? _roomCode;
-  final List<String> _people = ['You', 'Arjun', 'Nina'];
+  bool _expanded = false;
+  bool _loading = false;
+  WebSocket? _socket;
 
-  void _handleCreate() {
-    final code = (Random().nextInt(900000) + 100000).toString();
-    setState(() {
-      _roomCode = code;
-      _expanded = true;
-    });
-    widget.onCreate?.call();
+  @override
+  void initState() {
+    super.initState();
+    _roomApi = RoomApi();
   }
 
-  void _removePerson(String name) {
-    setState(() {
-      _people.remove(name);
-    });
+  @override
+  void dispose() {
+    _roomApi.close();
+    _socket?.close();
+    super.dispose();
+  }
+
+  Future<void> _handleCreate() async {
+    final studentId = widget.studentId;
+    if (studentId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login to create a room')),
+      );
+      return;
+    }
+
+    if (_loading) return;
+    setState(() => _loading = true);
+
+    try {
+      final result = await _roomApi.createRoom(ownerId: studentId);
+      _roomCode = result.code;
+      _expanded = true;
+      await _connectRoomSocket(result.code);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Create room failed: $e')),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _connectRoomSocket(String code) async {
+    _socket?.close();
+    final wsUri = _buildWsUri(code);
+    try {
+      final socket = await WebSocket.connect(wsUri.toString());
+      _socket = socket;
+      socket.listen((msg) {
+        _handleRoomMessage(msg);
+      }, onError: (_) {}, onDone: () {
+        _socket = null;
+      });
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  Uri _buildWsUri(String code) {
+    final base = Uri.parse(AppEnv.apiBaseUrl);
+    final scheme = base.scheme == 'https' ? 'wss' : 'ws';
+    final host = (Platform.isAndroid &&
+            (base.host == 'localhost' || base.host == '127.0.0.1'))
+        ? '10.0.2.2'
+        : base.host;
+    return Uri(
+      scheme: scheme,
+      host: host,
+      port: base.hasPort ? base.port : null,
+      path: '/ws',
+      queryParameters: {'roomCode': code},
+    );
+  }
+
+  void _handleRoomMessage(dynamic message) {
+    try {
+      final decoded = jsonDecode(message.toString());
+      if (decoded is! Map<String, dynamic>) return;
+      final type = decoded['type']?.toString();
+      if (type != 'room_snapshot' && type != 'room_update') return;
+      final roomJson = decoded['room'];
+      if (roomJson is! Map<String, dynamic>) return;
+      final room = RoomModel.fromJson(roomJson);
+      setState(() {
+        _room = room;
+        _roomCode = room.code;
+        _expanded = true;
+      });
+      widget.onRoomChanged?.call(room);
+    } catch (_) {
+      // ignore
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final members = _room?.members ?? const [];
+
     return AnimatedSize(
       duration: const Duration(milliseconds: 260),
       curve: Curves.easeOutCubic,
@@ -73,7 +165,7 @@ class _CreateRoomCardState extends State<CreateRoomCard>
                   ),
                 ),
                 TextButton(
-                  onPressed: _handleCreate,
+                  onPressed: _loading ? null : _handleCreate,
                   style: TextButton.styleFrom(
                     backgroundColor: AppColors.secondary,
                     foregroundColor: Colors.white,
@@ -81,7 +173,16 @@ class _CreateRoomCardState extends State<CreateRoomCard>
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Create'),
+                  child: _loading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Create'),
                 ),
               ],
             ),
@@ -114,60 +215,54 @@ class _CreateRoomCardState extends State<CreateRoomCard>
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-              ..._people.map(
-                (name) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            name.characters.first.toUpperCase(),
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700,
+              if (members.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                ...members.map(
+                  (member) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              member.name.characters.first.toUpperCase(),
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          name,
-                          style: const TextStyle(
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            member.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          member.status.toUpperCase(),
+                          style: TextStyle(
+                            color: member.status.toUpperCase() == 'PAID'
+                                ? Colors.green
+                                : Colors.orange,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
-                      const Text(
-                        'Paid',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      TextButton(
-                        onPressed: () => _removePerson(name),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.redAccent,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          minimumSize: const Size(0, 32),
-                        ),
-                        child: const Text('Remove'),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
           ],
         ),

@@ -5,11 +5,13 @@ import 'package:seefood/data/canteen_api/canteen.dart';
 import 'package:seefood/data/canteen_api/canteen_api.dart';
 import 'package:seefood/data/canteen_api/canteen_item.dart';
 import 'package:seefood/themes/app_colors.dart';
+import 'package:seefood/pages/prebook_checkout_page.dart';
 
 class ItemPage extends StatefulWidget {
-  const ItemPage({super.key, required this.canteen});
+  const ItemPage({super.key, required this.canteen, this.prebookSlotStart});
 
   final Canteen canteen;
+  final DateTime? prebookSlotStart;
 
   @override
   State<ItemPage> createState() => _ItemPageState();
@@ -74,8 +76,21 @@ class _ItemPageState extends State<ItemPage> {
               },
             ),
           ),
-          const Positioned.fill(
-            child: PlateBar(),
+          Positioned.fill(
+            child: PlateBar(
+              onCheckout: widget.prebookSlotStart == null
+                  ? null
+                  : () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => PrebookCheckoutPage(
+                            canteen: widget.canteen,
+                            slotStart: widget.prebookSlotStart!,
+                          ),
+                        ),
+                      );
+                    },
+            ),
           ),
         ],
       ),
