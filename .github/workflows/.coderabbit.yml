@@ -1,8 +1,0 @@
-
-reviews:
-  instructions: |
-    Upon receiving a 'PR Closed' event where the PR was merged:
-    1. Identify all CodeRabbit review comments that were NOT marked as resolved and only critical.
-    2. For each unresolved issue, use the GitHub API integration to CREATE a new Issue in the repository.
-    3. Label these issues as 'technical-debt' or 'coderabbit-deferred'.
-    4. Include the original code snippet and the reason why it was flagged in the issue body.
