@@ -5,12 +5,16 @@ import 'package:seefood/data/app_env.dart';
 import 'package:seefood/rooms/room_models.dart';
 
 class RoomApi {
-  RoomApi({http.Client? client}) : _client = client ?? http.Client();
+  RoomApi({http.Client? client, String? baseUrl})
+      : _client = client ?? http.Client(),
+        _baseUrl = baseUrl;
 
   final http.Client _client;
+  final String? _baseUrl;
 
   Future<RoomCreateResponse> createRoom({required int ownerId}) async {
-    final uri = Uri.parse('${AppEnv.apiBaseUrl}/rooms/create');
+    final base = _baseUrl ?? AppEnv.apiBaseUrl;
+    final uri = Uri.parse('$base/rooms/create');
     final response = await _client.post(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -24,7 +28,8 @@ class RoomApi {
   }
 
   Future<void> joinRoom({required String code, required int studentId}) async {
-    final uri = Uri.parse('${AppEnv.apiBaseUrl}/rooms/join');
+    final base = _baseUrl ?? AppEnv.apiBaseUrl;
+    final uri = Uri.parse('$base/rooms/join');
     final response = await _client.post(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -36,7 +41,8 @@ class RoomApi {
   }
 
   Future<RoomModel> fetchRoom({required String code}) async {
-    final uri = Uri.parse('${AppEnv.apiBaseUrl}/rooms/$code');
+    final base = _baseUrl ?? AppEnv.apiBaseUrl;
+    final uri = Uri.parse('$base/rooms/$code');
     final response = await _client.get(uri);
     if (response.statusCode != 200) {
       throw Exception('Failed to fetch room (${response.statusCode})');
@@ -49,7 +55,8 @@ class RoomApi {
     required String code,
     required int studentId,
   }) async {
-    final uri = Uri.parse('${AppEnv.apiBaseUrl}/rooms/$code/pay/create');
+    final base = _baseUrl ?? AppEnv.apiBaseUrl;
+    final uri = Uri.parse('$base/rooms/$code/pay/create');
     final response = await _client.post(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -69,7 +76,8 @@ class RoomApi {
     required String paymentId,
     required String signature,
   }) async {
-    final uri = Uri.parse('${AppEnv.apiBaseUrl}/rooms/$code/pay/verify');
+    final base = _baseUrl ?? AppEnv.apiBaseUrl;
+    final uri = Uri.parse('$base/rooms/$code/pay/verify');
     final response = await _client.post(
       uri,
       headers: {'Content-Type': 'application/json'},
