@@ -48,3 +48,9 @@ app.*.map.json
 # Environment variables
 .env
 .github/pr.md
+
+# dependencies
+node_modules/
+e2e/node_modules/
+test-results/
+playwright-report/

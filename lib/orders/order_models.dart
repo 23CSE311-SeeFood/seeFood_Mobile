@@ -7,6 +7,9 @@ class OrderItem {
     this.price,
     this.total,
     this.canteenItemName,
+    this.status,
+    this.category,
+    this.foodType,
   });
 
   final int id;
@@ -16,6 +19,9 @@ class OrderItem {
   final num? price;
   final num? total;
   final String? canteenItemName;
+  final String? status;
+  final String? category;
+  final String? foodType;
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     final canteenItem = json['canteenItem'] as Map<String, dynamic>?;
@@ -30,6 +36,9 @@ class OrderItem {
       canteenItemName: canteenItem?['name']?.toString(),
       price: json['price'] as num? ?? canteenItem?['price'] as num?,
       total: json['total'] as num?,
+      status: json['status']?.toString(),
+      category: canteenItem?['category']?.toString(),
+      foodType: canteenItem?['foodType']?.toString(),
     );
   }
 }
@@ -44,6 +53,7 @@ class OrderModel {
     this.studentId,
     this.canteenId,
     this.canteenName,
+    this.tokenNumber,
     this.createdAt,
     required this.items,
   });
@@ -56,6 +66,7 @@ class OrderModel {
   final int? studentId;
   final int? canteenId;
   final String? canteenName;
+  final int? tokenNumber;
   final DateTime? createdAt;
   final List<OrderItem> items;
 
@@ -72,6 +83,7 @@ class OrderModel {
       studentId: json['studentId'] as int? ?? json['student_id'] as int?,
       canteenId: json['canteenId'] as int? ?? json['canteen_id'] as int?,
       canteenName: canteenJson?['name']?.toString(),
+      tokenNumber: (json['tokenNumber'] as num?)?.toInt(),
       createdAt: createdAtValue != null ? DateTime.tryParse(createdAtValue) : null,
       items: itemsJson
           .whereType<Map<String, dynamic>>()
