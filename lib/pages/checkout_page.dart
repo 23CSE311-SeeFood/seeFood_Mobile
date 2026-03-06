@@ -56,8 +56,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               final paymentId = response.paymentId;
               final signature = response.signature;
 
-              if (orderId == null ||
-                  orderId.isEmpty ||
+              if (orderId.isEmpty ||
                   paymentId == null ||
                   paymentId.isEmpty ||
                   signature == null ||

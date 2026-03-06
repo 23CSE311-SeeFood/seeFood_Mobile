@@ -50,7 +50,7 @@ class _BookingsPageState extends State<BookingsPage> {
 
             return ListView.separated(
               itemCount: canteens.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 return _CanteenBookingCard(canteen: canteens[index]);
               },

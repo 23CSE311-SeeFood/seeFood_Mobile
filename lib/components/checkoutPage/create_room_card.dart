@@ -66,8 +66,7 @@ class _CreateRoomCardState extends State<CreateRoomCard>
         SnackBar(content: Text('Create room failed: $e')),
       );
     } finally {
-      if (!mounted) return;
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 

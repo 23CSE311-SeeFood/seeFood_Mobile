@@ -115,8 +115,7 @@ class _PrebookCheckoutPageState extends State<PrebookCheckoutPage> {
         SnackBar(content: Text('Prebook init failed: $e')),
       );
     } finally {
-      if (!mounted) return;
-      setState(() => _isPaying = false);
+      if (mounted) setState(() => _isPaying = false);
     }
   }
 
