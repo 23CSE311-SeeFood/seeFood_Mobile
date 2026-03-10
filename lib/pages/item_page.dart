@@ -43,53 +43,146 @@ class _ItemPageState extends State<ItemPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
-        toolbarHeight: 70,
+        toolbarHeight: 200,
         titleSpacing: 0,
         title: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 10),
-          child: Row(
+          padding: const EdgeInsets.only(left: 20, right: 10, bottom: 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  height: 50,
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      height: 50,
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
-                    ],
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Icons.arrow_back,
+                            color: Colors.black,
+                            size: 20,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            "Back",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  child: Row(
-                    children: const [
-                      Icon(
-                        Icons.arrow_back,
-                        color: Colors.black,
-                        size: 20,
-                      ),
-                      SizedBox(width: 4),
+                  const SizedBox(width: 12),
+                  const Expanded(child: SimpleSearchBar()),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        "Back",
-                        style: TextStyle(
+                        widget.canteen.name,
+                        style: const TextStyle(
                           color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                           Icon(
+                            Icons.access_time_filled_rounded,
+                            size: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                          const SizedBox(width: 4),
+                       Text(
+                        "30-40 mins",
+                        style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14),
+                      ),
+                        ],
+                      )
                     ],
                   ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(
+                          Icons.star_rounded,
+                          color: Colors.amber,
+                          size: 18,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          "4.5",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _CategoryPill(
+                      label: "Veg",
+                      color: Colors.green,
+                      isSelected: true,
+                      onTap: () {},
+                    ),
+                    _CategoryPill(
+                      label: "Non-Veg",
+                      color: Colors.red,
+                      onTap: () {},
+                    ),
+                    _CategoryPill(
+                        label: "Rice Items",
+                        color: Colors.orange,
+                        onTap: () {}),
+                    _CategoryPill(
+                        label: "Curry", color: Colors.blue, onTap: () {}),
+                  ],
                 ),
               ),
-              const SizedBox(width: 12),
-              const Expanded(child: SimpleSearchBar()),
             ],
           ),
         ),
@@ -145,5 +238,76 @@ class _ItemPageState extends State<ItemPage> {
         ],
       ),
     );
+  }
+}
+
+class _CategoryPill extends StatelessWidget {
+  final String label;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CategoryPill({
+    required this.label,
+    required this.color,
+    this.isSelected = false,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.fromLTRB(6, 6, 16, 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              height: 36,
+              width: 36,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isSelected ? Icons.check : _getIconForLabel(label),
+                size: 20,
+                color: color,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getIconForLabel(String label) {
+    if (label == 'Veg') return Icons.eco;
+    if (label == 'Non-Veg') return Icons.kebab_dining;
+    if (label == 'Rice Items') return Icons.rice_bowl;
+    if (label == 'Curry') return Icons.local_drink;
+    return Icons.fastfood;
   }
 }
