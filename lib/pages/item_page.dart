@@ -5,6 +5,7 @@ import 'package:seefood/data/canteen_api/canteen.dart';
 import 'package:seefood/data/canteen_api/canteen_api.dart';
 import 'package:seefood/data/canteen_api/canteen_item.dart';
 import 'package:seefood/themes/app_colors.dart';
+import 'package:seefood/components/itemPage/simple_search_bar.dart';
 import 'package:seefood/pages/prebook_checkout_page.dart';
 
 class ItemPage extends StatefulWidget {
@@ -39,10 +40,59 @@ class _ItemPageState extends State<ItemPage> {
     return Scaffold(
       backgroundColor: AppColors.grayground,
       appBar: AppBar(
-        backgroundColor: AppColors.foreground,
-        foregroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(widget.canteen.name),
+        automaticallyImplyLeading: false,
+        toolbarHeight: 70,
+        titleSpacing: 0,
+        title: Padding(
+          padding: const EdgeInsets.only(left: 20, right: 10),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  height: 50,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(
+                        Icons.arrow_back,
+                        color: Colors.black,
+                        size: 20,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        "Back",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(child: SimpleSearchBar()),
+            ],
+          ),
+        ),
       ),
       body: Stack(
         children: [
