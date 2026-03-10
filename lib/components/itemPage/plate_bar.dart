@@ -182,12 +182,13 @@ class _PlateHeader extends StatelessWidget {
     return SizedBox(
       height: _PlateBarState._collapsedHeight,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 54,
-              height: 54,
+              width: 48,
+              height: 48,
               decoration: const BoxDecoration(
                 color: Colors.black,
                 shape: BoxShape.circle,
