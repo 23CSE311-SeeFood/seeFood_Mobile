@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:seefood/components/checkoutPage/create_room_card.dart';
 import 'package:seefood/components/checkoutPage/join_room_card.dart';
 import 'package:seefood/components/checkoutPage/payment_summary_card.dart';
+import 'package:seefood/components/checkoutPage/room_members_card.dart';
+import 'package:seefood/components/checkoutPage/slide_to_pay_button.dart';
+import 'package:seefood/data/app_env.dart';
 import 'package:seefood/payment/order_api.dart';
 import 'package:seefood/payment/order_verify_api.dart';
 import 'package:seefood/payment/razorpay_service.dart';
@@ -22,14 +27,18 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
+  static const Duration _roomAnim = Duration(milliseconds: 260);
   late final RazorpayService _razorpayService;
   late final OrderApi _orderApi;
   late final OrderVerifyApi _verifyApi;
   late final RoomApi _roomApi;
   RoomModel? _room;
+  String? _roomCode;
+  WebSocket? _roomSocket;
   _RoomPayContext? _pendingRoomPay;
   bool _isPaying = false;
-  bool _showCreateRoom = false;
+  bool _isCreateMode = false;
+  bool _isCreatingRoom = false;
 
   void _goToOrders() {
     if (!mounted) return;
@@ -134,8 +143,117 @@ class _CheckoutPageState extends State<CheckoutPage> {
     _orderApi.close();
     _verifyApi.close();
     _roomApi.close();
+    _roomSocket?.close();
     _razorpayService.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleCreateRoomTap() async {
+    if (_isCreateMode) {
+      setState(() {
+        _isCreateMode = false;
+        _room = null;
+        _roomCode = null;
+      });
+      _roomSocket?.close();
+      _roomSocket = null;
+      return;
+    }
+
+    final authRepository = context.read<AuthRepository>();
+    final studentId = authRepository.getStudentId();
+    if (studentId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login to create a room')),
+      );
+      return;
+    }
+
+    if (_isCreatingRoom) return;
+    setState(() {
+      _isCreatingRoom = true;
+      _isCreateMode = true;
+      _room = null;
+      _roomCode = null;
+    });
+
+    try {
+      final created = await _roomApi.createRoom(ownerId: studentId);
+      _roomCode = created.code;
+      await _connectRoomSocket(created.code);
+      final room = await _roomApi.fetchRoom(code: created.code);
+      if (mounted) {
+        setState(() => _room = room);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isCreateMode = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Create room failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isCreatingRoom = false);
+    }
+  }
+
+  Future<void> _connectRoomSocket(String code) async {
+    _roomSocket?.close();
+    final wsUri = _buildWsUri(code);
+    try {
+      final socket = await WebSocket.connect(wsUri.toString());
+      _roomSocket = socket;
+      socket.listen((msg) {
+        _handleRoomMessage(msg);
+      }, onError: (_) {}, onDone: () {
+        _roomSocket = null;
+      });
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  Uri _buildWsUri(String code) {
+    final base = Uri.parse(AppEnv.apiBaseUrl);
+    final scheme = base.scheme == 'https' ? 'wss' : 'ws';
+    final host = (Platform.isAndroid &&
+            (base.host == 'localhost' || base.host == '127.0.0.1'))
+        ? '10.0.2.2'
+        : base.host;
+    return Uri(
+      scheme: scheme,
+      host: host,
+      port: base.hasPort ? base.port : null,
+      path: '/ws',
+      queryParameters: {'roomCode': code},
+    );
+  }
+
+  void _handleRoomMessage(dynamic message) {
+    try {
+      final decoded = jsonDecode(message.toString());
+      if (decoded is! Map<String, dynamic>) return;
+      final type = decoded['type']?.toString();
+      if (type != 'room_snapshot' && type != 'room_update') return;
+      final roomJson = decoded['room'];
+      if (roomJson is! Map<String, dynamic>) return;
+      final room = RoomModel.fromJson(roomJson);
+      if (!mounted) return;
+      setState(() {
+        _room = room;
+        _roomCode = room.code;
+        _isCreateMode = true;
+      });
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  void _handleKick(RoomMember member) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Kick not implemented yet')),
+    );
   }
 
   Future<void> _startPayment() async {
@@ -247,7 +365,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             fontWeight: FontWeight.w700,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
         leading: Center(
           child: GestureDetector(
             onTap: () => Navigator.pop(context),
@@ -276,12 +394,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         actions: [
           Center(
             child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showCreateRoom = !_showCreateRoom;
-                  _room = null;
-                });
-              },
+              onTap: _handleCreateRoomTap,
               child: Container(
                 margin: const EdgeInsets.only(right: 20),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -289,79 +402,141 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Text(
-                  _showCreateRoom ? 'Join Room' : 'Create Room',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
+                child: _isCreatingRoom
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        _isCreateMode ? 'Join Room' : 'Create Room',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
               ),
             ),
           ),
         ],
-        bottom: (_showCreateRoom && (_room?.code ?? '').isNotEmpty)
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(48),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.only(left: 20, right: 20, bottom: 8),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.grayground,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Room Code:',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          _room?.code ?? '',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-            : null,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_showCreateRoom)
-              CreateRoomCard(
-                studentId: studentId,
-                onRoomChanged: (room) {
-                  setState(() => _room = room);
-                },
-              )
-            else
-              JoinRoomCard(
-                studentId: studentId,
-                onRoomChanged: (room) {
-                  setState(() => _room = room);
-                },
-              ),
+            AnimatedSwitcher(
+              duration: _roomAnim,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeOutCubic,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SizeTransition(
+                    sizeFactor: animation,
+                    axisAlignment: -1,
+                    child: child,
+                  ),
+                );
+              },
+              child: (_isCreateMode && (_roomCode ?? '').isNotEmpty)
+                  ? Container(
+                      key: const ValueKey('room_code_bar'),
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.grayground,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _roomCode ?? '',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'room code',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(
+                      key: ValueKey('room_code_empty'),
+                    ),
+            ),
+            if (_isCreateMode && (_roomCode ?? '').isNotEmpty)
+              const SizedBox(height: 16),
+            AnimatedSwitcher(
+              duration: _roomAnim,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeOutCubic,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SizeTransition(
+                    sizeFactor: animation,
+                    axisAlignment: -1,
+                    child: child,
+                  ),
+                );
+              },
+              child: (_isCreateMode && (_roomCode ?? '').isNotEmpty)
+                  ? RoomMembersCard(
+                      key: const ValueKey('room_members_card'),
+                      members: _room?.members ?? const [],
+                      onKick: _handleKick,
+                    )
+                  : const SizedBox.shrink(
+                      key: ValueKey('room_members_empty'),
+                    ),
+            ),
+            if (_isCreateMode && (_roomCode ?? '').isNotEmpty)
+              const SizedBox(height: 16),
+            AnimatedSwitcher(
+              duration: _roomAnim,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeOutCubic,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SizeTransition(
+                    sizeFactor: animation,
+                    axisAlignment: -1,
+                    child: child,
+                  ),
+                );
+              },
+              child: !_isCreateMode
+                  ? JoinRoomCard(
+                      key: const ValueKey('join_room_card'),
+                      studentId: studentId,
+                      onRoomChanged: (room) {
+                        setState(() {
+                          _room = room;
+                          _roomCode = room?.code;
+                        });
+                      },
+                    )
+                  : const SizedBox.shrink(
+                      key: ValueKey('join_room_empty'),
+                    ),
+            ),
             const SizedBox(height: 20),
             Text(
               'Payment Summary',
@@ -383,47 +558,33 @@ class _CheckoutPageState extends State<CheckoutPage> {
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: SizedBox(
-          height: 52,
-          child: ElevatedButton(
-            onPressed: _isPaying || (isRoomActive && isMemberPaid)
-                ? null
-                : () {
-                    if (!isLoggedIn) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const LoginPage(),
-                        ),
-                      );
-                      return;
-                    }
-                    _startPayment();
-                  },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2B5F06),
-              foregroundColor: Colors.white,
-              shape: const StadiumBorder(),
-              elevation: 0,
-            ),
-            child: _isPaying
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : Text(
-                    isLoggedIn
-                        ? (isRoomActive
-                            ? (isMemberPaid ? 'Paid' : 'Pay share')
-                            : 'Pay')
-                        : 'Login to order',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+          height: 60,
+          child: SlideToPayButton(
+            isLoading: _isPaying,
+            enabled: !(isRoomActive && isMemberPaid),
+            onSlide: () {
+              if (!isLoggedIn) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const LoginPage(),
                   ),
+                );
+                return;
+              }
+              _startPayment();
+            },
+            child: Text(
+              isLoggedIn
+                  ? (isRoomActive
+                      ? (isMemberPaid ? 'Paid' : 'Slide to Pay Share')
+                      : 'Slide to Pay')
+                  : 'Slide to Login',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
       ),
