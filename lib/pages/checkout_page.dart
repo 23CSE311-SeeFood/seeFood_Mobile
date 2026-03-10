@@ -13,6 +13,8 @@ import 'package:seefood/payment/order_verify_api.dart';
 import 'package:seefood/payment/razorpay_service.dart';
 import 'package:seefood/pages/login_page.dart';
 import 'package:seefood/pages/main_page.dart';
+import 'package:seefood/pages/order_success_page.dart';
+import 'package:seefood/pages/payment_verifying_page.dart';
 import 'package:seefood/rooms/room_api.dart';
 import 'package:seefood/rooms/room_models.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
@@ -35,6 +37,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   RoomModel? _room;
   String? _roomCode;
   WebSocket? _roomSocket;
+  OrderCreateResponse? _pendingOrder;
   _RoomPayContext? _pendingRoomPay;
   bool _isPaying = false;
   bool _isCreateMode = false;
@@ -50,6 +53,33 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  void _goToSuccessPage({
+    required String orderId,
+    required int amountInPaise,
+    required int itemCount,
+  }) {
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => OrderSuccessPage(
+          orderId: orderId,
+          amountInPaise: amountInPaise,
+          itemCount: itemCount,
+        ),
+      ),
+      (route) => route.isFirst,
+    );
+  }
+
+  void _goToVerifyingPage() {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const PaymentVerifyingPage(),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -59,7 +89,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
     _razorpayService = RazorpayService(
       onSuccess: (response) {
         if (!mounted) return;
+        _goToVerifyingPage();
         () async {
+          var goToOrders = true;
           try {
             if (_pendingRoomPay != null) {
               final ctx = _pendingRoomPay!;
@@ -89,9 +121,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 signature: signature,
               );
               _pendingRoomPay = null;
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Room payment verified')),
+              final cart = context.read<CartController>();
+              final itemCount = cart.totalQuantity;
+              await cart.clear();
+              goToOrders = false;
+              _goToSuccessPage(
+                orderId: orderId,
+                amountInPaise: ctx.amountInPaise,
+                itemCount: itemCount,
               );
               return;
             }
@@ -101,9 +138,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
               paymentId: response.paymentId ?? '',
               signature: response.signature ?? '',
             );
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Payment verified')),
+            final cart = context.read<CartController>();
+            final itemCount = cart.totalQuantity;
+            final order = _pendingOrder;
+            _pendingOrder = null;
+            await cart.clear();
+            goToOrders = false;
+            _goToSuccessPage(
+              orderId: order?.orderId ?? (response.orderId ?? ''),
+              amountInPaise:
+                  order?.amountInPaise ?? (cart.totalPrice * 100).round(),
+              itemCount: itemCount,
             );
           } catch (e) {
             if (!mounted) return;
@@ -111,7 +156,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               SnackBar(content: Text('Verify failed: $e')),
             );
           } finally {
-            if (_pendingRoomPay == null) {
+            if (goToOrders && _pendingRoomPay == null) {
               _goToOrders();
             }
           }
@@ -290,6 +335,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           code: room.code,
           studentId: studentId,
           orderId: pay.orderId,
+          amountInPaise: pay.amount,
         );
 
         _razorpayService.openCheckout(
@@ -307,6 +353,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       final order = await _orderApi.createFromCart(
         studentId: studentId,
       );
+      _pendingOrder = order;
 
       final itemsSummary = cart.items
           .map((item) => '${item.name} x${item.quantity}')
@@ -597,9 +644,11 @@ class _RoomPayContext {
     required this.code,
     required this.studentId,
     required this.orderId,
+    required this.amountInPaise,
   });
 
   final String code;
   final int studentId;
   final String orderId;
+  final int amountInPaise;
 }
