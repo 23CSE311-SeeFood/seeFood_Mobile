@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:seefood/pages/checkout_page.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
 import 'package:seefood/store/cart/cart_item.dart';
+import 'package:seefood/themes/app_colors.dart';
 
 class PlateBar extends StatefulWidget {
   const PlateBar({
@@ -87,14 +88,14 @@ class _PlateBarState extends State<PlateBar> with TickerProviderStateMixin {
                             return Container(
                               height: containerHeight,
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 54, 125, 3),
+                                color: AppColors.primary,
                                 borderRadius:
                                     BorderRadius.circular(_cornerRadius),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.18),
-                                    blurRadius: 18,
-                                    offset: const Offset(0, 10),
+                                    color: Colors.black.withValues(alpha: 0.15),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
