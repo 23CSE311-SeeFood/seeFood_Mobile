@@ -223,36 +223,6 @@ Run specific integration test:
 flutter test integration_test/auth_test.dart
 ```
 
-### E2E Tests with Playwright
-
-The project includes comprehensive end-to-end tests using Playwright:
-
-```bash
-cd e2e
-
-# Install dependencies
-npm install
-
-# Run all tests
-npx playwright test
-
-# Run specific test file
-npx playwright test tests/auth.spec.ts
-
-# Run tests in debug mode
-npx playwright test --debug
-
-# Run tests with UI mode
-npx playwright test --ui
-```
-
-Available E2E test suites:
-- **auth.spec.ts** - Authentication flows
-- **shop.spec.ts** - Shopping and item browsing
-- **cart.spec.ts** - Cart operations
-- **checkout.spec.ts** - Checkout process
-- **profile_orders.spec.ts** - User profile and order history
-- **navigation.spec.ts** - App navigation flows
 
 ## Build and Deployment
 
