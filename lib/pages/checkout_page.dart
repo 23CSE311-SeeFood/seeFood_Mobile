@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seefood/components/checkoutPage/create_room_card.dart';
+import 'package:seefood/components/checkoutPage/join_room_card.dart';
 import 'package:seefood/components/checkoutPage/payment_summary_card.dart';
 import 'package:seefood/payment/order_api.dart';
 import 'package:seefood/payment/order_verify_api.dart';
@@ -28,6 +29,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   RoomModel? _room;
   _RoomPayContext? _pendingRoomPay;
   bool _isPaying = false;
+  bool _showCreateRoom = false;
 
   void _goToOrders() {
     if (!mounted) return;
@@ -233,22 +235,133 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return Scaffold(
       backgroundColor: AppColors.grayground,
       appBar: AppBar(
-        backgroundColor: AppColors.foreground,
-        foregroundColor: Colors.black,
+        backgroundColor: AppColors.grayground,
         elevation: 0,
-        title: const Text('Checkout'),
+        leadingWidth: 80,
+        automaticallyImplyLeading: false,
+        title: const Text(
+          'Checkout',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
+        leading: Center(
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 50,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.arrow_back,
+                size: 20,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          Center(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _showCreateRoom = !_showCreateRoom;
+                  _room = null;
+                });
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  _showCreateRoom ? 'Join Room' : 'Create Room',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+        bottom: (_showCreateRoom && (_room?.code ?? '').isNotEmpty)
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(48),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(left: 20, right: 20, bottom: 8),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.grayground,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Room Code:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _room?.code ?? '',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            : null,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            CreateRoomCard(
-              studentId: studentId,
-              onRoomChanged: (room) {
-                setState(() => _room = room);
-              },
-            ),
+            if (_showCreateRoom)
+              CreateRoomCard(
+                studentId: studentId,
+                onRoomChanged: (room) {
+                  setState(() => _room = room);
+                },
+              )
+            else
+              JoinRoomCard(
+                studentId: studentId,
+                onRoomChanged: (room) {
+                  setState(() => _room = room);
+                },
+              ),
             const SizedBox(height: 20),
             Text(
               'Payment Summary',

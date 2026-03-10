@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:seefood/data/canteen_api/canteen_item.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
+import 'package:seefood/themes/app_colors.dart';
 
 class ItemCard extends StatelessWidget {
   const ItemCard({super.key, required this.item, required this.canteenId});
@@ -264,8 +265,8 @@ class _AddToDishButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFDFF7E8),
-          foregroundColor: Colors.black87,
+          backgroundColor: AppColors.secondary,
+          foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
@@ -302,7 +303,7 @@ class _QuantityControl extends StatelessWidget {
         height: 54,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFFDFF7E8),
+          color: AppColors.secondary,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -317,6 +318,7 @@ class _QuantityControl extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
             _RoundIconButton(
