@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seefood/pages/login_page.dart';
 import 'package:seefood/store/auth/auth_repository.dart';
 import 'package:seefood/themes/app_colors.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, required this.onLogout});
 
   final VoidCallback onLogout;
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
   Widget build(BuildContext context) {
     final authRepository = context.watch<AuthRepository>();
     final profile = authRepository.getProfileOrFromToken();
+    final isLoggedIn =
+        (authRepository.getToken() ?? '').trim().isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -45,9 +53,18 @@ class ProfilePage extends StatelessWidget {
             height: 52,
             child: ElevatedButton(
               onPressed: () async {
-                await authRepository.clearAll();
-                if (!context.mounted) return;
-                onLogout();
+                if (isLoggedIn) {
+                  await authRepository.clearAll();
+                  if (!context.mounted) return;
+                  widget.onLogout();
+                  setState(() {});
+                } else {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const LoginPage(),
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
@@ -55,9 +72,9 @@ class ProfilePage extends StatelessWidget {
                 shape: const StadiumBorder(),
                 elevation: 0,
               ),
-              child: const Text(
-                'Logout',
-                style: TextStyle(
+              child: Text(
+                isLoggedIn ? 'Logout' : 'Login',
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),

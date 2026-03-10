@@ -49,6 +49,20 @@ class CanteenApi {
 
     return decoded
         .map((item) => CanteenItem.fromJson(item as Map<String, dynamic>))
+        .map((item) {
+          if (item.imageUrl != null && item.imageUrl!.startsWith('/')) {
+            return CanteenItem(
+              id: item.id,
+              name: item.name,
+              description: item.description,
+              price: item.price,
+              imageUrl: '$_baseUrl${item.imageUrl}',
+              rating: item.rating,
+              canteenId: item.canteenId,
+            );
+          }
+          return item;
+        })
         .toList();
   }
 

@@ -13,8 +13,5 @@ void main() async {
   await cartRepository.init();
   final authRepository = AuthRepository();
   await authRepository.init();
-  runApp(MyApp(
-    cartRepository: cartRepository,
-    authRepository: authRepository,
-  ));
+  runApp(MyApp(cartRepository: cartRepository, authRepository: authRepository));
 }

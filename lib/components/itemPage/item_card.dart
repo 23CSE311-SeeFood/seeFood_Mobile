@@ -114,7 +114,7 @@ class _ItemImage extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             height: 200,
-            child: imageUrl == null
+            child: (imageUrl == null || imageUrl!.isEmpty)
                 ? DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -137,6 +137,39 @@ class _ItemImage extends StatelessWidget {
                 : Image.network(
                     imageUrl!,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      debugPrint('Image load error: $error');
+                      return DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.orange.shade200,
+                              Colors.orange.shade400,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.fastfood,
+                            size: 48,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
                   ),
           ),
           Positioned(

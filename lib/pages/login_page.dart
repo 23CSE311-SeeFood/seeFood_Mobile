@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _launchCollegeSso() async {
-    final uri = Uri.parse('https://00bf-202-88-252-190.ngrok-free.app/auth/microsoft/login?redirect=seefood://auth');
+    final uri = Uri.parse('https://a733-202-88-252-190.ngrok-free.app/auth/microsoft/login?redirect=seefood://auth');
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
