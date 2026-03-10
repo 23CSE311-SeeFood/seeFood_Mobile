@@ -3,6 +3,8 @@ import 'package:seefood/components/homePage/canteen_card.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/data/canteen_api/canteen_api.dart';
 import 'package:seefood/data/canteen_api/canteen.dart';
+import 'package:seefood/components/mainPage/search_bar.dart';
+import 'package:seefood/components/mainPage/banner_gallery.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -31,7 +33,7 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.grayground,
+    color: AppColors.grayground,
       child: Padding(
         padding: const EdgeInsetsDirectional.only(
           start: 20,
@@ -39,28 +41,40 @@ class _HomepageState extends State<Homepage> {
           end: 20,
           bottom: 0,
         ),
-        child: FutureBuilder<List<Canteen>>(
-          future: _canteensFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (snapshot.hasData) {
-              final canteens = snapshot.data!;
-              return ListView.builder(
-                itemCount: canteens.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: CanteenCard(canteen: canteens[index]),
-                  );
+        child: Column(
+          children: [
+            const SearchBarWidget(),
+            const SizedBox(height: 16),
+            const BannerGallery(
+              aspectRatio: 16 / 9,
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: FutureBuilder<List<Canteen>>(
+                future: _canteensFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (snapshot.hasData) {
+                    final canteens = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: canteens.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: CanteenCard(canteen: canteens[index]),
+                        );
+                      },
+                    );
+                  } else {
+                    return const Center(child: Text('No canteens found'));
+                  }
                 },
-              );
-            } else {
-              return const Center(child: Text('No canteens found'));
-            }
-          },
+              ),
+            ),
+          ],
         ),
       ),
     );

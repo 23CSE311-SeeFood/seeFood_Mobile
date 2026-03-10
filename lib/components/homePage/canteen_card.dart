@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:seefood/themes/app_colors.dart';
 import 'package:seefood/data/canteen_api/canteen.dart';
 import 'package:seefood/pages/item_page.dart';
@@ -44,10 +45,11 @@ class CanteenCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(25),
                       child: canteen.imageUrl != null &&
                               canteen.imageUrl!.trim().isNotEmpty
-                          ? Image.network(
-                              canteen.imageUrl!,
+                          ? CachedNetworkImage(
+                              imageUrl: canteen.imageUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => _FallbackImage(),
+                              placeholder: (_, __) => _FallbackImage(),
+                              errorWidget: (_, __, ___) => _FallbackImage(),
                             )
                           : _FallbackImage(),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:seefood/data/canteen_api/canteen_item.dart';
 import 'package:seefood/store/cart/cart_controller.dart';
@@ -115,61 +116,12 @@ class _ItemImage extends StatelessWidget {
             width: double.infinity,
             height: 200,
             child: (imageUrl == null || imageUrl!.isEmpty)
-                ? DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.orange.shade200,
-                          Colors.orange.shade400,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.fastfood,
-                        size: 48,
-                        color: Colors.white,
-                      ),
-                    ),
-                  )
-                : Image.network(
-                    imageUrl!,
+                ? _ItemImageFallback()
+                : CachedNetworkImage(
+                    imageUrl: imageUrl!,
                     fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      debugPrint('Image load error: $error');
-                      return DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.orange.shade200,
-                              Colors.orange.shade400,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.fastfood,
-                            size: 48,
-                            color: Colors.white,
-                          ),
-                        ),
-                      );
-                    },
+                    placeholder: (_, __) => _ItemImageFallback(),
+                    errorWidget: (_, __, ___) => _ItemImageFallback(),
                   ),
           ),
           Positioned(
@@ -194,6 +146,31 @@ class _ItemImage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ItemImageFallback extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.orange.shade200,
+            Colors.orange.shade400,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.fastfood,
+          size: 48,
+          color: Colors.white,
+        ),
       ),
     );
   }
